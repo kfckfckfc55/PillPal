@@ -1,0 +1,9 @@
+/** Nội dung miễn trừ trách nhiệm y khoa — dùng thống nhất trong toàn app. */
+export const MEDICAL_DISCLAIMER =
+  'PillPal chỉ là công cụ hỗ trợ ghi nhớ, chuẩn bị và quản lý thông tin sức khỏe cá nhân. ' +
+  'Ứng dụng không thay thế chẩn đoán, kê đơn hay chỉ định của bác sĩ, dược sĩ. ' +
+  'Khi có dấu hiệu bất thường hoặc khẩn cấp, hãy liên hệ cơ sở y tế gần nhất hoặc gọi 115.';
+
+/** Bản rút gọn để hiển thị ở chân màn hình. */
+export const MEDICAL_DISCLAIMER_SHORT =
+  'PillPal chỉ hỗ trợ ghi nhớ, không thay thế chỉ định của bác sĩ, dược sĩ. Khẩn cấp: gọi 115.';
