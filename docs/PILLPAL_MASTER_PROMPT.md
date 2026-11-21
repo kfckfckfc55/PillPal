@@ -22,9 +22,10 @@ Bạn là **Senior Mobile & Full-Stack Engineer** chuyên React Native (Expo), T
   4. theo dõi phản ứng thuốc, triệu chứng và chỉ số sức khỏe theo từng đợt điều trị;
   5. quản lý giấy tờ và chi phí y tế;
   6. chia sẻ hồ sơ thuận tiện cho bác sĩ hoặc người thân.
+- **Phạm vi hiện tại:** dự án **phi thương mại** (chưa thu phí, chưa quảng cáo). Tính năng được ưu tiên: **con cháu theo dõi việc uống thuốc của ông bà từ xa**, với sự đồng ý của chính ông bà (Milestone 2.5).
 
 ## 3. NGUYÊN TẮC THIẾT KẾ & VẬN HÀNH
-1. **Offline-first:** lịch uống thuốc, thông báo nhắc giờ, checklist đi khám, câu hỏi cho bác sĩ và mọi ghi chép cơ bản hoạt động đầy đủ khi mất mạng. Dữ liệu luôn ghi vào SQLite trên máy trước; đồng bộ cloud (Milestone 5) là lớp bổ sung, không bắt buộc.
+1. **Offline-first:** lịch uống thuốc, thông báo nhắc giờ, checklist đi khám, câu hỏi cho bác sĩ và mọi ghi chép cơ bản hoạt động đầy đủ khi mất mạng. Dữ liệu luôn ghi vào SQLite trên máy trước; đồng bộ với máy chủ (từ Milestone 2.5, chỉ khi người dùng kết nối gia đình) là lớp bổ sung, không bắt buộc. App dùng được đầy đủ khi **không có tài khoản**.
 2. **Thích ứng trạng thái sức khỏe — Chế độ Đang mệt (Sick-Day Mode):** giao diện gọn, thao tác nhanh cho người bận rộn. Khi bật Sick-Day Mode: chữ nội dung ≥ 18px (tiêu đề ≥ 24px), vùng chạm ≥ 48×48dp (nút chính nên cao ≥ 56dp), mỗi màn hình chỉ giữ hành động thiết yếu.
 3. **Tablet-first & responsive:** `width >= 768` → bố cục 2 cột Master-Detail; điện thoại → 1 cột. Hỗ trợ xoay ngang trên tablet. Giới hạn chiều rộng vùng đọc để nội dung không bị kéo giãn.
 4. **Giao diện Sáng / Tối:** màu chủ đạo **xanh navy**, có 3 lựa chọn **Theo hệ thống / Sáng / Tối** (chi tiết ở mục 4).
@@ -81,8 +82,9 @@ Màu chủ đạo là **xanh navy**. Dùng đúng các token dưới đây (đã
 - **Local DB:** `expo-sqlite` (API async hiện hành: `SQLiteProvider`, `useSQLiteContext`, `openDatabaseAsync`…), bật `PRAGMA foreign_keys = ON`, migration theo `PRAGMA user_version`.
 - **Thông báo:** `expo-notifications` (nhắc thuốc, báo lại ngắn hạn, nhắc lịch khám đa mốc, nút hành động ngay trên thông báo).
 - **Biểu đồ / Media / QR:** `react-native-gifted-charts` (+ phụ thuộc `react-native-svg`, `expo-linear-gradient`), `expo-image-picker`, `expo-file-system`, `expo-audio` (không dùng `expo-av` đã deprecated), `react-native-qrcode-svg`.
-- **Module Expo được phép dùng khi cần** (giải thích lý do khi dùng lần đầu): `expo-crypto` (UUID), `expo-system-ui`, `expo-splash-screen`, `expo-status-bar`, `expo-localization` (múi giờ), `expo-haptics`, `expo-keep-awake`, `expo-sharing`, `expo-print`.
-- **Backend & Cloud Sync:** lớp `src/services/` tách biệt, có interface rõ ràng; chạy bản **mock/local** trước, sau đó mới nối REST API / Supabase / FastAPI + PostgreSQL (đề xuất và hỏi tôi chọn ở Milestone 5).
+- **Module Expo được phép dùng khi cần** (giải thích lý do khi dùng lần đầu): `expo-crypto` (UUID), `expo-system-ui`, `expo-splash-screen`, `expo-status-bar`, `expo-localization` (múi giờ), `expo-haptics`, `expo-keep-awake`, `expo-sharing`, `expo-print`, `expo-secure-store` (phiên đăng nhập), `expo-camera` (quét QR ghép máy).
+- **Backend (đã chốt): PocketBase tự host** — một file chạy duy nhất (auth, phân quyền theo collection rule, realtime, SQLite), nhẹ (~512 MB RAM). Khi phát triển: chạy trên **máy tính cá nhân** của nhóm (0 đồng), điện thoại kết nối qua Wi-Fi nội bộ. Khi có người dùng thật: máy chủ ảo **đặt tại Việt Nam** (sau Cổng pháp lý B). Code PocketBase (migrations, hooks) đặt trong thư mục `server/` của repo. App gọi backend qua lớp `src/services/` có interface rõ ràng để đổi backend được.
+- **Đăng nhập (đã chốt):** con cháu đăng nhập bằng **số điện thoại + mã OTP 6 số** (khi phát triển dùng mã giả cho số thử nghiệm, chưa gửi SMS thật; nhà cung cấp SMS chọn sau). **Ông bà không cần đăng nhập**: ghép máy bằng cách **quét mã QR dùng một lần (hết hạn 10 phút) từ máy con**, có mã 6 số dự phòng; màn hình đồng ý chữ to hiện trên máy ông bà.
 - **Kiểm tra chất lượng:** `npx tsc --noEmit`, `npx expo lint`; từ Milestone 2 có unit test cho logic thuần (tính lịch uống, đếm viên, mốc nhắc khám, ngưỡng chỉ số) bằng `jest-expo`.
 - **Version control & build:** repo GitHub sạch với `.gitignore`, `.env.example`, `README.md` (chạy local, chạy trên thiết bị, build EAS), `eas.json` gồm profile `development`, `preview` (APK / ad-hoc để test) và `production` (`.aab` / `.ipa`).
 
@@ -113,13 +115,16 @@ src/
   types/                  # Kiểu dữ liệu domain
   utils/                  # date, format (VNĐ, dd/MM/yyyy, 24h), id
   constants/              # strings.vi.ts, disclaimer.ts, vitalThresholds.ts, checklistTemplates.ts
+server/                   # PocketBase: pb_migrations/, pb_hooks/, README chạy trên máy tính (từ Milestone 2.5)
 ```
+> Ghi chú: route nằm trong `src/app/` (quy ước của Expo SDK 58) thay vì `app/` ở gốc.
 
 ### 5.4 Thiết kế dữ liệu SQLite (thiết kế đầy đủ ngay ở Milestone 1)
 Quy ước chung cho mọi bảng:
 - `id TEXT PRIMARY KEY` (UUID — sẵn sàng đồng bộ), `created_at`, `updated_at`, `deleted_at` (xóa mềm, phục vụ sync).
 - Thời điểm lưu dạng ISO 8601 UTC; giờ trong ngày (giờ uống thuốc, giờ sinh hoạt) lưu dạng `HH:mm` theo giờ địa phương; tiền lưu số nguyên VNĐ.
 - Mọi dữ liệu sức khỏe gắn `profile_id`; dữ liệu thuộc một đợt điều trị gắn thêm `journey_id` (cho phép NULL).
+- Các bảng có thể đồng bộ cho gia đình (`profiles`, `medications`, `medication_schedules`, `medication_pauses`, `dose_events`, `family_links`) có thêm `remote_id` (id trên máy chủ) và `synced_at`. Hồ sơ của người thân nhận từ máy chủ được đánh dấu `is_remote = 1` (chỉ đọc). Bảng khác chỉ lưu trên máy.
 - Có khóa ngoại, `ON DELETE` hợp lý và index cho các cột truy vấn thường xuyên (`profile_id`, `scheduled_at`, `starts_at`, `measured_at`…).
 - Sau Milestone 1, thay đổi schema **chỉ bằng migration mới**, không sửa migration đã chạy.
 
@@ -149,7 +154,7 @@ Các bảng tối thiểu:
 | Giấy tờ & chi phí | `documents` | loại giấy tờ, tiêu đề, đường dẫn file, loại file, gắn với đợt / lịch khám |
 | | `audio_notes` | file ghi âm dặn dò, thời lượng, gắn với lịch khám |
 | | `expenses` | loại chi phí, số tiền, phần BHYT chi trả, ngày, gắn với đợt / lịch khám |
-| Chia sẻ | `share_grants` | người thân được chia sẻ, các quyền, trạng thái, hết hạn |
+| Chia sẻ | `family_links` | kết nối gia đình: hồ sơ được xem, chiều (mình chia sẻ đi / người khác chia sẻ cho mình), tên & quan hệ người kia, từng quyền (xem thuốc, xem cữ đã uống, nhận cảnh báo), trạng thái (chờ / đang hoạt động / đã thu hồi), thời điểm đồng ý / thu hồi |
 | | `share_links` | mã / link tạm cho bác sĩ, phạm vi, hết hạn, thu hồi |
 | Hệ thống | `scheduled_notifications` | ánh xạ thông báo đã lên lịch ↔ thực thể (để hủy / lên lịch lại) |
 | | `app_settings` | key–value: theme, Sick-Day Mode, giờ nhắc mặc định… |
@@ -165,8 +170,10 @@ Các bảng tối thiểu:
 
 ### 5.6 Services & đồng bộ
 - Mọi thao tác dữ liệu đi qua `repositories`; UI không viết SQL trực tiếp.
-- `services/sync` định nghĩa interface `SyncService` với 2 bản: `MockSyncService` (mặc định) và `ApiSyncService` (Milestone 5).
-- Chiến lược đề xuất: local-first, đẩy thay đổi theo `updated_at`, xung đột xử lý last-write-wins kèm xóa mềm — trình bày chi tiết và hỏi tôi trước khi triển khai.
+- `services/sync` định nghĩa interface `SyncService`; bản PocketBase là mặc định khi đã kết nối gia đình, không kết nối thì không gọi mạng.
+- **Chỉ đồng bộ phần tối thiểu:** danh sách thuốc + lịch, trạng thái từng cữ (đã uống / chưa xác nhận / quên), tạm dừng, cảnh báo sắp hết thuốc. Triệu chứng, chỉ số, ảnh, ghi âm, câu hỏi bác sĩ **không** đồng bộ, trừ khi ông bà bật chia sẻ riêng từng mục (Milestone 5).
+- Chiến lược: local-first, đẩy thay đổi theo `updated_at`, xung đột last-write-wins kèm xóa mềm; máy của ông bà là nguồn dữ liệu chính, máy con cháu chỉ đọc.
+- **Thông báo đẩy cho con cháu** (VD: "Bố chưa xác nhận cữ 8:00 sau 60 phút") chỉ ghi nội dung chung chung ("Có cập nhật từ Bố"); chi tiết chỉ hiện khi mở app, vì thông báo đẩy đi qua máy chủ Expo/Apple/Google ở nước ngoài.
 - Biến môi trường qua `.env` (`EXPO_PUBLIC_*` chỉ cho giá trị không bí mật), có `.env.example`.
 
 ## 6. MODULE TÍNH NĂNG
@@ -205,7 +212,7 @@ Các bảng tối thiểu:
 - **Chi phí:** ghi nhanh số tiền (VNĐ), loại (khám, thuốc, xét nghiệm, chẩn đoán hình ảnh, đi lại, khác), phần BHYT chi trả; tổng hợp theo đợt điều trị và theo tháng.
 - **Đa hồ sơ gia đình:** bản thân, con nhỏ, bố mẹ, vợ / chồng…; chuyển hồ sơ nhanh ở header; mọi dữ liệu và thông báo tách theo hồ sơ.
 - **Thẻ y tế khẩn cấp (Emergency Card):** nhóm máu, dị ứng nghiêm trọng, bệnh nền chính, thuốc đang dùng, người liên hệ khẩn cấp (chạm để gọi) — mở được trong 1 chạm từ màn hình Hôm nay và trong Sick-Day Mode.
-- **Đồng hành cùng người thân (có phân quyền):** chọn từng quyền — xem trạng thái uống thuốc; nhận cảnh báo trễ cữ / sắp hết thuốc / chỉ số bất thường; xem nhật ký nhắc nhở. Thu hồi quyền bất kỳ lúc nào.
+- **Đồng hành cùng người thân (có phân quyền) — Milestone 2.5:** con cháu đăng nhập bằng số điện thoại + OTP; ông bà ghép máy bằng QR từ máy con; ông bà chọn từng quyền (xem danh sách thuốc, xem cữ đã uống, cho phép gửi cảnh báo trễ cữ / sắp hết thuốc) và thu hồi bất kỳ lúc nào. Mở rộng chia sẻ chỉ số, triệu chứng ở Milestone 5.
 - **Chia sẻ cho bác sĩ:** tạo **mã QR / link tạm thời** chỉ đọc, có thời hạn (mặc định 24 giờ), có phạm vi (VD: chỉ bản tóm tắt), thu hồi được. Đề xuất phương án kỹ thuật (cần backend) và hỏi tôi trước khi làm.
 - **Xóa tài khoản & toàn bộ dữ liệu:** xác nhận 2 bước; xóa DB, file ảnh / ghi âm, thông báo đã lên lịch, cài đặt, và dữ liệu trên server (nếu đã đồng bộ). Đáp ứng yêu cầu của App Store (xóa được ngay trong app) và Google Play (kèm link web để yêu cầu xóa dữ liệu).
 
@@ -224,13 +231,23 @@ Mỗi milestone được chia thành các bước nhỏ (VD: 1A, 1B, 1C). **Mỗ
 
 ### Milestone 1 — Nền móng, theme navy Sáng/Tối, schema, màn hình chính & Sick-Day
 - **1A — Khởi tạo dự án & design system:** tạo dự án Expo + TypeScript strict + expo-router + ESLint; cấu trúc thư mục mục 5.3; `app.json` / `app.config.ts` (tên PillPal, `slug`, `scheme`, bundle id / package dạng placeholder để tôi điền, `userInterfaceStyle: "automatic"`, `ios.supportsTablet: true`, icon / splash nền navy cho Sáng và Tối); `eas.json`; `.gitignore`; `.env.example`; `README.md`. Theme: tokens mục 4, `ThemeProvider`, `useTheme`, theme cho React Navigation, các UI component cơ bản; màn hình Cài đặt có bộ chọn **Theo hệ thống / Sáng / Tối** (lưu tạm trong bộ nhớ, lưu bền ở 1B).
-- **1B — SQLite:** kết nối DB, migration v1 với **toàn bộ** bảng ở mục 5.4, kiểu TypeScript tương ứng, repository cơ bản, dữ liệu mẫu tiếng Việt (2 hồ sơ, 2 đợt điều trị, 3–4 thuốc — trong đó 1 thuốc gây buồn ngủ và 1 thuốc sắp hết, 1 lịch tái khám trong 3 ngày tới, chỉ số huyết áp 7 ngày, vài triệu chứng, 1 dị ứng), hàm reset DB cho môi trường dev. Lưu cài đặt theme vào `app_settings`, giữ splash cho tới khi load xong. Bảng `consents` theo mục 10; không cài SDK analytics/crash report nào.
+- **1B — SQLite:** kết nối DB, migration v1 với **toàn bộ** bảng ở mục 5.4, kiểu TypeScript tương ứng, repository cơ bản, dữ liệu mẫu tiếng Việt (2 hồ sơ, 2 đợt điều trị, 3–4 thuốc — trong đó 1 thuốc gây buồn ngủ và 1 thuốc sắp hết, 1 lịch tái khám trong 3 ngày tới, chỉ số huyết áp 7 ngày, vài triệu chứng, 1 dị ứng), hàm reset DB cho môi trường dev. Lưu cài đặt theme vào `app_settings`, giữ splash cho tới khi load xong. Bảng `consents` theo mục 10; bảng `family_links` và cột `remote_id` / `synced_at` sẵn cho Milestone 2.5 (chưa gọi mạng); màn hình "Dữ liệu (dev)" để xem số bản ghi, nạp lại dữ liệu mẫu, xóa sạch; không cài SDK analytics/crash report nào.
 - **1C — Màn hình chính & Sick-Day:** khung 5 tab (tab chưa làm hiển thị "Sẽ có ở Milestone X"); màn hình **Hôm nay** đọc dữ liệu thật từ SQLite; **Sick-Day Mode** (bật / tắt, lưu bền, giao diện tối giản chữ to); màn hình chào lần đầu mở app gồm Medical Disclaimer + Thông báo xử lý dữ liệu cá nhân (tóm tắt: dữ liệu chỉ lưu trên máy, quyền của người dùng) — người dùng chủ động bấm đồng ý (không tick sẵn), lưu phiên bản văn bản vào `consents`; hook `useResponsive` (breakpoint 768) và giới hạn chiều rộng nội dung trên tablet.
 - **DoD M1:** `npx expo start` chạy không lỗi trên iOS & Android; `tsc` và `lint` sạch; đổi Sáng / Tối tức thì, giữ nguyên sau khi tắt mở app, không nháy trắng; Sick-Day lưu bền và mọi chữ ≥ 18px; dữ liệu mẫu hiển thị đúng; cả 4 tổ hợp theme × Sick-Day đều đọc rõ.
 
 ### Milestone 2 — Nhắc uống thuốc thông minh
 Thêm / sửa / xóa thuốc & lịch uống (giờ cố định / khung sinh hoạt); giờ sinh hoạt theo loại ngày; sinh `dose_events`; thao tác Đã uống / Nhắc lại 10–15 phút / Uống trễ lúc… / Bỏ qua / Hoàn tác; gắn tag tác dụng phụ + lưu ý an toàn; đếm viên, tiến độ liệu trình, cảnh báo sắp hết; tạm dừng có lý do & tự bật lại; xử lý đổi múi giờ; local notification theo mục 5.5 (quyền, channel, nút hành động, lên lịch cuốn chiếu, lên lịch lại); lịch sử uống 7 ngày; unit test cho logic tính lịch và đếm viên.
 - **DoD M2:** nhận thông báo đúng giờ trên máy thật (kể cả khi app tắt); bấm nút trên thông báo cập nhật đúng DB; số viên và tiến độ chính xác; khi tạm dừng không có thông báo; test pass.
+
+### Milestone 2.5 — Tài khoản & Gia đình (con cháu theo dõi ông bà)
+Chia nhỏ khi làm (VD: 2.5A máy chủ, 2.5B đăng nhập, 2.5C ghép gia đình, 2.5D đồng bộ & cảnh báo):
+- **Máy chủ:** PocketBase chạy trên máy tính cá nhân; thư mục `server/` gồm migrations tạo collection và collection rule (con cháu chỉ đọc được hồ sơ đã được cho phép, chỉ máy ông bà ghi được dữ liệu của ông bà); README hướng dẫn chạy trên Windows / macOS.
+- **Đăng nhập con cháu:** số điện thoại + OTP 6 số qua route tùy chỉnh của PocketBase; **dev dùng mã giả** cho danh sách số thử nghiệm; giới hạn số lần gửi mã (chống spam đốt tiền SMS); lưu phiên đăng nhập bằng `expo-secure-store`.
+- **Ghép máy ông bà:** máy con tạo mã ghép dùng một lần (QR + mã 6 số, hết hạn 10 phút); máy ông bà chọn "Con cháu cài giúp" → quét QR (`expo-camera`) → nhận tài khoản thiết bị (không cần số điện thoại) → **màn hình đồng ý chữ to** chọn từng quyền → ghi `consents` + `family_links`.
+- **Đồng bộ tối thiểu** theo mục 5.6; máy con cháu có màn hình "Gia đình" xem từng người thân: thuốc hôm nay, cữ nào đã uống / chưa, cảnh báo sắp hết thuốc; ông bà có màn hình xem ai đang theo dõi mình và nút thu hồi.
+- **Cảnh báo cho con cháu** khi cữ chưa được xác nhận sau X phút (mặc định 60) — thông báo đẩy nội dung chung chung.
+- **Không có mạng:** máy ông bà vẫn nhắc và ghi bình thường, có mạng thì tự đồng bộ.
+- **DoD M2.5:** trên 2 điện thoại thật + PocketBase chạy trên máy tính: con đăng nhập bằng số thử nghiệm, ghép máy ông bà bằng QR, ông bà đồng ý; ông bà bấm "Đã uống" → máy con thấy trong vài giây; tắt mạng máy ông bà rồi bật lại → dữ liệu tự đồng bộ; ông bà thu hồi → máy con mất quyền xem ngay. Chỉ dùng dữ liệu thử nghiệm hoặc dữ liệu người nhà đã đồng ý bằng văn bản (mục 10.5).
 
 ### Milestone 3 — Đợt điều trị & hành trình đi khám
 CRUD đợt điều trị + dòng thời gian; lịch khám + nhắc đa mốc (3 ngày, 1 ngày, sáng ngày khám); checklist theo mẫu loại lịch hẹn; sổ câu hỏi cho bác sĩ; quản lý dị ứng & bệnh nền; bản tóm tắt 1 trang + chế độ trình bày; ghi chú sau khám + tạo lịch tái khám; đơn thuốc (chụp ảnh, nhập nhanh, đối chiếu dị ứng, so sánh đơn mới / cũ); nhật ký triệu chứng 1 chạm (nút nổi).
@@ -241,7 +258,7 @@ Nhập chỉ số sinh tồn + biểu đồ có ngưỡng (đúng màu Sáng / T
 - **DoD M4:** biểu đồ đánh dấu đúng điểm vượt ngưỡng; ảnh / ghi âm còn nguyên sau khi khởi động lại app; iPad và tablet Android hiển thị 2 cột đúng ở cả dọc và ngang.
 
 ### Milestone 5 — Gia đình, khẩn cấp, chia sẻ & Cloud
-Đa hồ sơ gia đình + chuyển hồ sơ (xác nhận quyền quản lý hồ sơ của người khác); Thẻ y tế khẩn cấp; đồng hành người thân có phân quyền; mã QR / link tạm thời cho bác sĩ; đồng bộ cloud (đề xuất backend + kế hoạch, **hỏi tôi chọn trước khi code**; ưu tiên máy chủ đặt tại Việt Nam; xác thực; mock trước rồi API thật); xóa tài khoản & toàn bộ dữ liệu. **Mọi tính năng gửi dữ liệu ra khỏi máy phải nằm sau feature flag và chỉ được bật khi "Cổng pháp lý B" (mục 10) đã hoàn tất.**
+Đa hồ sơ gia đình trên cùng một máy + chuyển hồ sơ (xác nhận quyền quản lý hồ sơ của người khác); Thẻ y tế khẩn cấp; mở rộng chia sẻ cho người thân (chỉ số, triệu chứng — từng mục do ông bà bật); mã QR / link tạm thời cho bác sĩ; chọn nhà cung cấp SMS thật (**hỏi tôi trước**); triển khai PocketBase lên máy chủ tại Việt Nam, sao lưu tự động; xóa tài khoản & toàn bộ dữ liệu (cả trên máy chủ). **Mọi tính năng gửi dữ liệu ra khỏi máy phải nằm sau feature flag và chỉ được bật khi "Cổng pháp lý B" (mục 10) đã hoàn tất.**
 - **DoD M5:** dữ liệu và thông báo tách đúng theo hồ sơ; app vẫn chạy đầy đủ khi offline; link chia sẻ hết hạn / thu hồi đúng; xóa dữ liệu không để sót file hay thông báo.
 
 ### Milestone 6 — Hoàn thiện & phát hành
@@ -275,10 +292,11 @@ Chi tiết, nguồn và các điểm cần luật sư xác nhận: `docs/LEGAL_C
 - Luật Thương mại điện tử 122/2025/QH15 và Luật Bảo vệ quyền lợi người tiêu dùng 2023 — khi thu phí.
 - Chính sách Google Play (Health apps declaration, Data safety) và Apple (5.1.1(ix): app y tế nên do pháp nhân nộp; xóa tài khoản trong app).
 
-### 10.2 Giai đoạn A — chỉ lưu trên máy (Milestone 1–4, bản phát hành đầu)
-Dữ liệu chỉ nằm trên máy người dùng; không server, không tài khoản, không SDK gửi dữ liệu ra ngoài. Người dùng tự chia sẻ qua nút Share của hệ điều hành. Vẫn bắt buộc: Medical Disclaimer, thông báo xử lý dữ liệu, giải thích trước khi xin từng quyền, xóa toàn bộ dữ liệu (xóa thật), xuất dữ liệu, tối thiểu hóa dữ liệu, nhật ký đồng ý `consents`.
+### 10.2 Giai đoạn A — chỉ lưu trên máy (người dùng không kết nối gia đình)
+Người dùng không đăng nhập / không ghép gia đình thì dữ liệu chỉ nằm trên máy; không gọi máy chủ, không SDK gửi dữ liệu ra ngoài. Người dùng tự chia sẻ qua nút Share của hệ điều hành. Vẫn bắt buộc: Medical Disclaimer, thông báo xử lý dữ liệu, giải thích trước khi xin từng quyền, xóa toàn bộ dữ liệu (xóa thật), xuất dữ liệu, tối thiểu hóa dữ liệu, nhật ký đồng ý `consents`.
 
-### 10.3 Giai đoạn B — "Cổng pháp lý B" (trước khi bật cloud, chia sẻ, QR ở Milestone 5)
+### 10.3 Giai đoạn B — "Cổng pháp lý B" (trước khi người ngoài nhóm dùng tính năng gia đình, đồng bộ, QR bác sĩ)
+"Phi thương mại" **không** được miễn các nghĩa vụ này: Luật 91/2025 áp dụng cho cả cá nhân xử lý dữ liệu, và dữ liệu sức khỏe là dữ liệu nhạy cảm.
 Chỉ bật khi đã có: pháp nhân + tài khoản tổ chức; hồ sơ đánh giá tác động xử lý dữ liệu (DPIA) nộp cơ quan chuyên trách; máy chủ tại Việt Nam (hoặc hồ sơ chuyển dữ liệu ra nước ngoài); đồng ý riêng cho từng mục đích, rút lại dễ dàng; quy trình báo vi phạm trong 72 giờ; mã hóa, phân quyền, nhật ký truy cập; quy trình xử lý yêu cầu truy cập/sửa/xóa/xuất; luật sư đã rà soát.
 
 ### 10.4 Quy tắc sản phẩm
@@ -286,6 +304,13 @@ Chỉ bật khi đã có: pháp nhân + tài khoản tổ chức; hồ sơ đán
 - Ghi âm lời dặn của bác sĩ: luôn nhắc xin phép trước khi ghi.
 - Ngưỡng chỉ số chỉ là tham khảo, người dùng chỉnh được; không dùng từ "chẩn đoán", "điều trị", "phát hiện bệnh".
 - Mô tả cửa hàng ghi rõ app không phải thiết bị y tế, không chẩn đoán, điều trị hay phòng bệnh.
+- Ông bà là người trưởng thành: **chính ông bà đồng ý** trên máy của mình; con cháu không đồng ý thay (trừ người giám hộ theo pháp luật).
+- Không lưu số CCCD; số điện thoại chỉ dùng để đăng nhập, không hiển thị cho người khác ngoài gia đình đã kết nối.
+
+### 10.5 Máy chủ chạy trên máy tính cá nhân (giai đoạn phát triển)
+- Được dùng để phát triển và thử nghiệm nội bộ với **dữ liệu giả** hoặc với **người nhà của thành viên nhóm đã được giải thích và đồng ý bằng văn bản** (giữ bản đồng ý).
+- Không mở cho người ngoài; không dùng đường hầm qua dịch vụ nước ngoài (VD: Cloudflare Tunnel) cho dữ liệu thật khi chưa đánh giá chuyển dữ liệu ra nước ngoài.
+- Mã hóa ổ đĩa máy tính, đặt mật khẩu tài khoản admin PocketBase mạnh, không commit dữ liệu (`server/pb_data/`) lên Git; xóa dữ liệu thử nghiệm khi kết thúc đợt thử.
 
 ## 11. BẮT ĐẦU
 Hãy bắt đầu với **bước tiếp theo chưa hoàn thành** trong lộ trình (xem mục "Tiến độ" trong `README.md`; bước đầu tiên là **Milestone 1 — Bước 1A**). Trước khi viết code, tóm tắt tối đa 10 dòng: kiến trúc tổng thể, các quyết định chính (phiên bản Expo SDK, cách tổ chức theme Sáng / Tối, cách lưu cài đặt) và các giả định bạn đặt ra. Sau đó thực hiện Bước 1A theo đúng định dạng ở mục 9 rồi dừng lại.

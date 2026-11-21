@@ -35,7 +35,18 @@
 - Người dùng tự chia sẻ bằng nút Share của hệ điều hành (Zalo, email…). App không tự gửi.
 - Nghĩa vụ vẫn còn: chính sách quyền riêng tư, Medical Disclaimer, giải thích từng quyền (camera, micro, thông báo), nút xóa toàn bộ dữ liệu, bảo mật dữ liệu trên máy, khai báo trên cửa hàng.
 
-### Giai đoạn B — Cloud, chia sẻ người thân, QR cho bác sĩ (Milestone 5)
+### Cập nhật quyết định (11/2026)
+- Dự án **phi thương mại**, nhưng điều này **không** miễn nghĩa vụ theo Luật 91/2025 (luật áp dụng cho cả cá nhân xử lý dữ liệu; mình chưa tìm thấy điều khoản miễn trừ cho dự án phi lợi nhuận ⚠️).
+- Tính năng con cháu theo dõi ông bà được đưa lên **Milestone 2.5**: con cháu đăng nhập bằng số điện thoại + OTP; ông bà ghép máy bằng QR, **tự đồng ý** trên máy của mình.
+- Backend: **PocketBase**. Khi phát triển chạy trên máy tính cá nhân (mục "Máy chủ trên máy tính cá nhân" dưới đây); khi có người dùng thật: máy chủ tại Việt Nam.
+- Gửi OTP qua SMS: dịch vụ quốc tế dễ bị chậm hoặc lọc với số Việt Nam và đưa số điện thoại ra nước ngoài; SMS thương hiệu trong nước và Zalo ZNS thường cần doanh nghiệp ⚠️. Khi phát triển dùng **mã giả**; chọn nhà cung cấp ở Milestone 5.
+
+### Máy chủ trên máy tính cá nhân (giai đoạn phát triển)
+- Chỉ dùng **dữ liệu giả**, hoặc dữ liệu của **người nhà thành viên nhóm đã được giải thích và đồng ý bằng văn bản** (giữ bản đồng ý).
+- Không mở cho người ngoài. Không đưa dữ liệu thật qua đường hầm của dịch vụ nước ngoài (VD: Cloudflare Tunnel giải mã HTTPS tại máy chủ của họ) khi chưa đánh giá chuyển dữ liệu ra nước ngoài.
+- Mã hóa ổ đĩa, mật khẩu admin PocketBase mạnh, không commit thư mục dữ liệu `server/pb_data/` lên Git, xóa dữ liệu thử khi kết thúc đợt thử.
+
+### Giai đoạn B — Tính năng gia đình, đồng bộ, QR cho bác sĩ với người dùng thật
 Nhà phát triển trở thành bên kiểm soát/xử lý **dữ liệu nhạy cảm**. Đây là **"Cổng pháp lý B"**: tính năng gửi dữ liệu ra khỏi máy phải nằm sau feature flag và **chỉ được bật khi mọi mục dưới đây đã xong**:
 
 - [ ] Có pháp nhân (công ty) đứng tên dịch vụ; tài khoản Apple/Google dạng tổ chức.
@@ -78,12 +89,13 @@ Nhà phát triển trở thành bên kiểm soát/xử lý **dữ liệu nhạy 
 
 | Milestone | Việc pháp lý |
 |---|---|
-| **1B** | Thêm bảng `consents`; lưu phiên bản Disclaimer/Chính sách đã chấp nhận; không cài bất kỳ SDK analytics/crash nào |
+| **1B** | Thêm bảng `consents`; lưu phiên bản Disclaimer/Chính sách đã chấp nhận; không lưu số CCCD/BHYT; không cài bất kỳ SDK analytics/crash nào |
 | **1C** | Màn hình chào lần đầu: Medical Disclaimer + Thông báo xử lý dữ liệu (tóm tắt, dữ liệu chỉ lưu trên máy) → người dùng chủ động bấm đồng ý, không tick sẵn |
 | **2** | Giải thích trước khi xin quyền thông báo; tùy chọn ẩn tên thuốc |
 | **3** | Lời nhắc xin phép trước khi ghi âm; cảnh báo nhẹ khi chụp giấy tờ có thông tin người khác; xác nhận quyền quản lý hồ sơ khi tạo hồ sơ thành viên |
 | **4** | File lưu trong thư mục riêng của app; xuất PDF/ảnh kèm cảnh báo "bản này chứa thông tin sức khỏe, chỉ gửi cho người tin cậy"; chức năng xuất toàn bộ dữ liệu |
-| **5** | **Cổng pháp lý B** (mục 3) phải hoàn tất trước khi bật cloud, chia sẻ, QR; đồng ý riêng từng mục đích; xóa tài khoản và dữ liệu trên server |
+| **2.5** | Màn hình đồng ý chữ to trên máy ông bà, chọn từng quyền, thu hồi được; chỉ đồng bộ phần tối thiểu (thuốc, trạng thái cữ); thông báo đẩy không chứa tên thuốc; giới hạn gửi OTP; chỉ thử với dữ liệu giả hoặc người nhà đã đồng ý bằng văn bản |
+| **5** | **Cổng pháp lý B** (mục 3) phải hoàn tất trước khi người ngoài nhóm dùng tính năng gia đình, đồng bộ, QR bác sĩ; đồng ý riêng từng mục đích; xóa tài khoản và dữ liệu trên server |
 | **6** | Chính sách quyền riêng tư + Điều khoản sử dụng (tiếng Việt), trang web xóa dữ liệu, khai báo cửa hàng, tài khoản tổ chức, **luật sư rà soát toàn bộ** trước khi nộp |
 
 ## 6. Câu hỏi cần hỏi luật sư
