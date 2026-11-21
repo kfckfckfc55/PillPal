@@ -56,6 +56,15 @@
         {
           "faceIDPermission": false
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Kề Bên dùng camera để quét mã QR ghép máy với người thân. Hình ảnh không được lưu hay gửi đi.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false,
+          "barcodeScannerEnabled": true
+        }
       ]
     ],
     "experiments": {

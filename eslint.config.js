@@ -16,6 +16,7 @@ const pocketbaseGlobals = {
   $app: 'readonly',
   $apis: 'readonly',
   $security: 'readonly',
+  $dbx: 'readonly',
   $os: 'readonly',
   Record: 'readonly',
   TextField: 'readonly',

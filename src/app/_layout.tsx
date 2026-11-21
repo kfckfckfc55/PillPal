@@ -126,6 +126,10 @@ function RootNavigator() {
           />
           <Stack.Screen name="family/index" options={{ title: strings.family.screenTitle }} />
           <Stack.Screen name="family/login" options={{ title: strings.family.loginScreenTitle }} />
+          <Stack.Screen name="family/pair-code" options={{ title: strings.family.pairCode.screenTitle }} />
+          <Stack.Screen name="family/scan" options={{ title: strings.family.scan.screenTitle }} />
+          <Stack.Screen name="family/consent" options={{ title: strings.family.consent.screenTitle }} />
+          <Stack.Screen name="family/followers" options={{ title: strings.family.followers.screenTitle }} />
           <Stack.Screen name="design-preview" options={{ title: strings.designPreview.screenTitle }} />
           <Stack.Screen name="dev-data" options={{ title: strings.devData.screenTitle }} />
         </Stack.Protected>

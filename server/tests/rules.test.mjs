@@ -276,6 +276,15 @@ async function main() {
     assert.equal(linksLeft.items.length, 0, 'xóa tài khoản → xóa luôn liên kết');
     pass('con xóa tài khoản → liên kết bị xóa theo; ông vẫn giữ dữ liệu của mình');
 
+    // ---- Hồi quy (2.5C): hồ sơ KHÔNG còn người theo dõi → khách vẫn không đọc được ----
+    // (PocketBase: `members.id ?= @request.auth.id` đúng với danh sách rỗng khi khách có id rỗng.)
+    for (const collection of ['shared_profiles', 'medications', 'dose_events']) {
+      assert.equal((await listIds(collection, undefined)).length, 0, `khách đọc được ${collection}`);
+    }
+    denied(await api('GET', `/api/collections/shared_profiles/records/${profile.id}`), 'guest view orphan profile');
+    denied(await api('GET', `/api/collections/medications/records/${medication.id}`), 'guest view orphan medication');
+    pass('hồ sơ không còn ai theo dõi → khách vẫn không thấy hồ sơ / thuốc / cữ');
+
     // ---- Máy ông xóa tài khoản → xóa sạch dữ liệu của ông trên máy chủ ----
     ok(await api('DELETE', `/api/collections/devices/records/${grandpa.id}`, { token: grandpa.token }), 'device deletes account');
     created.devices = created.devices.filter((id) => id !== grandpa.id);

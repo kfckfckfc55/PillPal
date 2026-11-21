@@ -158,7 +158,7 @@ Windows (PowerShell):
 $env:PB_SUPERUSER_EMAIL='ten-ban@example.com'; $env:PB_SUPERUSER_PASSWORD='MAT-KHAU-MANH-CUA-BAN'; $env:PB_URL='http://127.0.0.1:8090'; node tests/rules.test.mjs
 ```
 
-Script tạo vài tài khoản **giả**, thử 12 tình huống (ai đọc / ghi được gì, thu hồi quyền, xóa tài khoản…) rồi tự xóa dữ liệu thử. Kết quả mong đợi: `TẤT CẢ LUẬT TRUY CẬP ĐỀU ĐÚNG`.
+Script tạo vài tài khoản **giả**, thử 13 tình huống (ai đọc / ghi được gì, thu hồi quyền, xóa tài khoản, khách không đọc được hồ sơ đã hết người theo dõi…) rồi tự xóa dữ liệu thử. Kết quả mong đợi: `TẤT CẢ LUẬT TRUY CẬP ĐỀU ĐÚNG`.
 
 **Kiểm tra đăng nhập OTP** — quy tắc thuần (không cần máy chủ):
 
@@ -174,21 +174,48 @@ PB_SUPERUSER_EMAIL=ten-ban@example.com PB_SUPERUSER_PASSWORD='MAT-KHAU-MANH-CUA-
 
 Kết quả mong đợi: `ĐĂNG NHẬP OTP HOẠT ĐỘNG ĐÚNG` (10 tình huống: số sai / số thật, gửi lại quá sớm, thiếu đồng ý, sai mã, đăng nhập, gia hạn phiên, không tự đổi số, sai 5 lần bị khóa, mã hết hạn, xóa tài khoản).
 
+**Kiểm tra ghép máy (bước 2.5C)** — quy tắc thuần:
+
+```bash
+node tests/pairing-rules.test.mjs
+```
+
+và trên máy chủ thật (cùng cách khởi động như trên, **chờ 1 phút** sau khi chạy `otp.test.mjs` vì giới hạn 20 lần/phút cho `/api/keben/`):
+
+```bash
+PB_SUPERUSER_EMAIL=ten-ban@example.com PB_SUPERUSER_PASSWORD='MAT-KHAU-MANH-CUA-BAN' PB_URL=http://127.0.0.1:8090 node tests/pairing.test.mjs
+```
+
+Kết quả mong đợi: `GHÉP MÁY HOẠT ĐỘNG ĐÚNG` (10 tình huống: tạo mã cần đăng nhập, xem trước không tiêu mã, thiếu đồng ý / không bật quyền nào bị từ chối, mã dùng một lần, máy mới tự có tài khoản, con cháu không tự cấp quyền, ghép thêm người thứ hai bằng mã 6 số, mã cũ hết hiệu lực khi tạo mã mới, thu hồi mất quyền ngay).
+
+### Các route ghép máy (bước 2.5C)
+
+| Route | Ai gọi | Việc làm |
+|---|---|---|
+| `POST /api/keben/pairing/create` | Con cháu (đã đăng nhập) | Tạo mã **dùng một lần**: 6 số + chuỗi QR 40 ký tự, hết hạn **10 phút**, tối đa 10 mã/giờ; mã cũ chưa dùng bị hủy. Máy chủ chỉ lưu **bản băm** |
+| `POST /api/keben/pairing/preview` | Máy ông bà | Xem trước **ai** muốn theo dõi (tên gọi + số đã che) — không tiêu mã |
+| `POST /api/keben/pairing/complete` | Máy ông bà | Chỉ chạy khi có phiên bản văn bản đồng ý + **ít nhất một quyền** do ông bà bật. Máy mới gửi khóa + mật khẩu tự sinh để tạo tài khoản máy; tạo / cập nhật hồ sơ (chỉ tên gọi) và liên kết; đánh dấu mã đã dùng — tất cả trong **một transaction** |
+
+Mã QR chỉ chứa `KEBEN-PAIR:1:<chuỗi ngẫu nhiên>` — **không** chứa địa chỉ máy chủ, số điện thoại hay tên. Mã hết hạn / đã dùng được dọn mỗi giờ.
+
 ## 6. Dữ liệu trên máy chủ (tối thiểu hóa)
 
 | Collection | Nội dung | Ai đọc | Ai ghi |
 |---|---|---|---|
 | `caregivers` | Con cháu: số điện thoại, tên gọi, phiên bản văn bản đồng ý + thời điểm đồng ý | Chính người đó | Route OTP phía máy chủ; người đó sửa tên / xóa tài khoản |
 | `otp_requests` | Mã OTP **đã băm** + salt, hạn dùng, số lần nhập sai | **Không ai** (chỉ route phía máy chủ) | Route OTP; tự xóa sau 24 giờ |
-| `devices` | Máy của ông bà (tạo khi ghép QR ở bước 2.5C), không cần số điện thoại | Chính máy đó | Route ghép máy; máy đó xóa tài khoản |
+| `devices` | Máy của ông bà: khóa máy ngẫu nhiên + tên máy, **không cần số điện thoại** | Chính máy đó | Route ghép máy; máy đó xóa tài khoản |
+| `pairing_codes` | Mã ghép **đã băm** (6 số + chuỗi QR), hạn dùng, đã dùng chưa | **Không ai** (chỉ route phía máy chủ) | Route ghép máy; tự dọn mỗi giờ |
 | `shared_profiles` | **Chỉ tên gọi** của ông bà | Máy ông bà + con cháu đang được chia sẻ | Chỉ máy ông bà |
-| `family_links` | Liên kết = **bản ghi đồng ý của ông bà**: từng quyền (xem thuốc / xem cữ / nhận cảnh báo), phiên bản văn bản, thời điểm đồng ý / thu hồi | Máy ông bà + đúng người con cháu đó | Tạo qua route ghép máy; **chỉ máy ông bà** đổi quyền / thu hồi; con cháu tự ngừng theo dõi được |
+| `family_links` | Liên kết = **bản ghi đồng ý của ông bà**: từng quyền (xem thuốc / xem cữ / nhận cảnh báo), phiên bản văn bản, thời điểm đồng ý / thu hồi; bản chụp tên gọi + số đã che của con cháu và tên hồ sơ lúc ghép (để máy ông bà biết **ai** đang theo dõi) | Máy ông bà + đúng người con cháu đó | Tạo qua route ghép máy; **chỉ máy ông bà** đổi quyền / thu hồi (không ai sửa được bản chụp / dấu vết đồng ý); con cháu tự ngừng theo dõi được |
 | `medications` | Tên thuốc, hàm lượng, liều, mô tả lịch ngắn, đang dùng / tạm dừng, sắp hết | Máy ông bà + con cháu có quyền **xem thuốc** | Chỉ máy ông bà |
 | `dose_events` | Giờ dự kiến + trạng thái từng cữ (đã uống / chưa / quên…) | Máy ông bà + con cháu có quyền **xem cữ** | Chỉ máy ông bà |
 
 **Không** có trên máy chủ: ngày sinh, giới tính, nhóm máu, bệnh nền, dị ứng, triệu chứng, chỉ số, ảnh, ghi âm, câu hỏi bác sĩ, chi phí, email.
 
 Cách phân quyền: hook `pb_hooks/family_links.pb.js` tính lại danh sách người được xem của hồ sơ mỗi khi liên kết được tạo / đổi quyền / thu hồi / xóa → luật truy cập của `medications` và `dose_events` dựa vào danh sách này → **thu hồi là mất quyền ngay**. Danh sách người xem không trả về qua API (`pb_hooks/shared_profiles.pb.js`), client không tự sửa được. Xóa tài khoản máy ông bà → toàn bộ hồ sơ, thuốc, cữ, liên kết bị xóa dây chuyền.
+
+Mọi luật truy cập đều bắt đầu bằng `@request.auth.id != ""` (migration `1795266000_keben_guest_guard.js`): với PocketBase, điều kiện "bất kỳ phần tử nào" (`members.id ?= @request.auth.id`) **đúng với danh sách rỗng** khi khách có id rỗng — nên không có chốt này thì khách đọc được hồ sơ không còn ai theo dõi.
 
 Cài đặt máy chủ đặt sẵn trong migration: nhật ký giữ 3 ngày và **không ghi IP / id tài khoản**; bật giới hạn tần suất gọi API; tắt batch API; **xóa collection `users`** mặc định (cho phép tự đăng ký bằng email — Kề Bên không dùng).
 

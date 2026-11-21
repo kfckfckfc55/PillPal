@@ -131,7 +131,7 @@ async function main() {
 
     ok(await request('0900000013'), 'request 3');
     const pending = ok(
-      await api('GET', `/api/collections/otp_requests/records?filter=${encodeURIComponent('phone = "0900000013"')}`, { token: admin }),
+      await api('GET', `/api/collections/otp_requests/records?sort=-created&filter=${encodeURIComponent('phone = "0900000013" && consumed = false')}`, { token: admin }),
       'find otp',
     ).items[0];
     ok(
