@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "PillPal",
-    "slug": "pillpal",
-    "scheme": "pillpal",
+    "name": "Kề Bên",
+    "slug": "ke-ben",
+    "scheme": "keben",
     "platforms": [
       "ios",
       "android"
@@ -14,10 +14,10 @@
     "backgroundColor": "#1B3A6B",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourcompany.pillpal"
+      "bundleIdentifier": "com.yourcompany.keben"
     },
     "android": {
-      "package": "com.yourcompany.pillpal",
+      "package": "com.yourcompany.keben",
       "adaptiveIcon": {
         "backgroundColor": "#1B3A6B",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

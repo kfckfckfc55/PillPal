@@ -23,7 +23,7 @@
 | **Nghị định 98/2021/NĐ-CP về trang thiết bị y tế** (đã sửa đổi nhiều lần) | 01/01/2022 | Nếu phần mềm có mục đích y khoa (chẩn đoán, theo dõi, điều trị…) | Phân loại A–D; loại C/D cần số lưu hành ⚠️ chưa đối chiếu định nghĩa "phần mềm" trong bản hợp nhất mới nhất | Thấp |
 | **Luật Thương mại điện tử 122/2025/QH15** + Nghị định 248/2026/NĐ-CP | 01/07/2026 | Chỉ khi app bán hàng/dịch vụ hoặc thu phí ⚠️ | Thông báo/đăng ký với Bộ Công Thương nếu thuộc diện "ứng dụng TMĐT" | Thấp |
 | **Luật Bảo vệ quyền lợi người tiêu dùng 2023** + Nghị định 55/2024/NĐ-CP | 01/07/2024 | Khi thu phí | Minh bạch giá và điều khoản; hợp đồng theo mẫu thuộc danh mục phải đăng ký | Trung bình |
-| Luật Khám bệnh, chữa bệnh; Luật Dược; Luật Quảng cáo | — | Nếu app tư vấn, khám từ xa, bán hoặc quảng cáo thuốc | Cần giấy phép/xác nhận nội dung → **PillPal không làm các tính năng này** ⚠️ chưa tra lại chi tiết | — |
+| Luật Khám bệnh, chữa bệnh; Luật Dược; Luật Quảng cáo | — | Nếu app tư vấn, khám từ xa, bán hoặc quảng cáo thuốc | Cần giấy phép/xác nhận nội dung → **Kề Bên không làm các tính năng này** ⚠️ chưa tra lại chi tiết | — |
 | **Google Play – Health apps policy** | Hiện hành | Mọi app | Khai báo *Health apps declaration* và *Data safety*; app không phải thiết bị y tế phải ghi rõ trong mô tả: "không phải thiết bị y tế, không chẩn đoán, điều trị hay phòng bệnh" và khuyên hỏi nhân viên y tế; có chính sách quyền riêng tư | Cao |
 | **Apple App Review Guidelines** | Hiện hành | Mọi app | 5.1.1(ix): app y tế/dữ liệu nhạy cảm nên do pháp nhân nộp; có xóa tài khoản trong app; khai báo *App Privacy* | Cao |
 
@@ -78,7 +78,7 @@ Nhà phát triển trở thành bên kiểm soát/xử lý **dữ liệu nhạy 
 12. Không quảng cáo, gợi ý mua hay liên kết bán thuốc; không tư vấn hoặc khám từ xa.
 
 **Cửa hàng ứng dụng**
-13. Mô tả trên cửa hàng ghi rõ: *"PillPal không phải thiết bị y tế, không chẩn đoán, điều trị hay phòng ngừa bệnh. Hãy hỏi ý kiến bác sĩ, dược sĩ."*
+13. Mô tả trên cửa hàng ghi rõ: *"Kề Bên không phải thiết bị y tế, không chẩn đoán, điều trị hay phòng ngừa bệnh. Hãy hỏi ý kiến bác sĩ, dược sĩ."*
 14. Điền đúng *Health apps declaration*, *Data safety* (Google) và *App Privacy* (Apple). Ở giai đoạn A khai báo "không thu thập dữ liệu" chỉ khi đúng là vậy.
 15. Có trang web công khai: chính sách quyền riêng tư và hướng dẫn xóa dữ liệu (Google Play yêu cầu link web).
 
@@ -102,7 +102,7 @@ Nhà phát triển trở thành bên kiểm soát/xử lý **dữ liệu nhạy 
 
 1. Với mô hình chỉ lưu trên máy (không server, không analytics), nhà phát triển có phải là bên kiểm soát/xử lý dữ liệu cá nhân không? Có phải lập và nộp DPIA không?
 2. App (nhắc thuốc, ghi chỉ số, đánh dấu vượt ngưỡng tham khảo) có thuộc định nghĩa trang thiết bị y tế theo Nghị định 98/2021 bản hợp nhất mới nhất không?
-3. Khi có cloud: thời hạn nộp DPIA; Luật An ninh mạng 2025 đã bắt buộc lưu trữ dữ liệu trong nước với dịch vụ như PillPal chưa; nếu dùng cloud nước ngoài thì thủ tục CTIA ra sao?
+3. Khi có cloud: thời hạn nộp DPIA; Luật An ninh mạng 2025 đã bắt buộc lưu trữ dữ liệu trong nước với dịch vụ như Kề Bên chưa; nếu dùng cloud nước ngoài thì thủ tục CTIA ra sao?
 4. Dữ liệu sức khỏe người dùng có bị coi là "dữ liệu quan trọng" theo Luật Dữ liệu 2024 không?
 5. Thu phí qua App Store/Google Play có khiến app thành "ứng dụng thương mại điện tử" theo Luật TMĐT 2025 và Nghị định 248/2026 không?
 6. Loại hình pháp nhân phù hợp để mở tài khoản tổ chức Apple/Google (công ty TNHH một thành viên, …).

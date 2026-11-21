@@ -1,7 +1,7 @@
 import type { TextStyle } from 'react-native';
 
 /**
- * Thang chữ của PillPal.
+ * Thang chữ của Kề Bên.
  * - Chế độ thường: body 16, bodySmall 14, title 20, display 28.
  * - Sick-Day Mode: body 20, bodySmall 18, title 24, display 32 — không có chữ < 18px.
  * Dùng font hệ thống (không tải font ngoài) để nhẹ và hỗ trợ tiếng Việt đầy đủ.

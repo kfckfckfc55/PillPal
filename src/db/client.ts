@@ -1,6 +1,6 @@
 import { openDatabaseAsync, type SQLiteDatabase } from 'expo-sqlite';
 
-export const DATABASE_NAME = 'pillpal.db';
+export const DATABASE_NAME = 'keben.db';
 
 /** Kiểu giá trị được phép truyền vào câu lệnh SQL. */
 export type BindValue = string | number | null;

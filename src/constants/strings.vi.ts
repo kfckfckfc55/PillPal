@@ -3,7 +3,7 @@
  * để sau này dễ sửa câu chữ hoặc dịch sang ngôn ngữ khác.
  */
 export const strings = {
-  appName: 'PillPal',
+  appName: 'Kề Bên',
 
   common: {
     loading: 'Đang tải…',
@@ -102,7 +102,7 @@ export const strings = {
     colorsTitle: 'Bảng màu',
     typographyTitle: 'Cỡ chữ',
     typographySamples: {
-      display: 'Tiêu đề lớn — PillPal',
+      display: 'Tiêu đề lớn — Kề Bên',
       title: 'Tiêu đề — Cữ thuốc buổi sáng',
       subtitle: 'Tiêu đề phụ — Sau ăn sáng',
       body: 'Nội dung — Uống 1 viên với nước lọc.',
@@ -137,7 +137,7 @@ export const strings = {
     },
     statesTitle: 'Trạng thái màn hình',
     emptyTitle: 'Chưa có thuốc nào',
-    emptyDescription: 'Thêm thuốc đầu tiên để PillPal nhắc bạn đúng giờ.',
+    emptyDescription: 'Thêm thuốc đầu tiên để Kề Bên nhắc bạn đúng giờ.',
     emptyAction: 'Thêm thuốc',
     errorMessage: 'Không đọc được dữ liệu. Đây chỉ là trạng thái mẫu.',
   },

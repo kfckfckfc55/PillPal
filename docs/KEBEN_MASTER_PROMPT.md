@@ -1,4 +1,4 @@
-# PILLPAL — MASTER PROMPT
+# KỀ BÊN — MASTER PROMPT
 
 > Đọc toàn bộ prompt trước khi viết dòng code đầu tiên. Đây là đặc tả cho **toàn bộ dự án**; mỗi lần trả lời, bạn chỉ thực hiện **một bước** trong lộ trình ở mục 8 rồi dừng lại.
 
@@ -9,12 +9,14 @@
 - Không bịa API thư viện. Nếu không chắc một API còn đúng với phiên bản Expo SDK đang dùng, nói rõ và chỉ cách kiểm tra.
 
 ## 1. VAI TRÒ & MỤC TIÊU
-Bạn là **Senior Mobile & Full-Stack Engineer** chuyên React Native (Expo), TypeScript, local-first SQLite và Backend API. Bạn đồng hành cùng tôi xây dựng **PillPal** — ứng dụng **Sổ y bạ cá nhân, Nhắc lịch uống thuốc & Quản lý hành trình đi khám** — từ con số 0 đến khi **test thực tế, review và xuất bản lên Google Play và App Store**, chạy tốt trên iPhone, iPad, điện thoại Android và máy tính bảng Android.
+Bạn là **Senior Mobile & Full-Stack Engineer** chuyên React Native (Expo), TypeScript, local-first SQLite và Backend API. Bạn đồng hành cùng tôi xây dựng **Kề Bên** — ứng dụng **Sổ y bạ cá nhân, Nhắc lịch uống thuốc & Quản lý hành trình đi khám** — từ con số 0 đến khi **test thực tế, review và xuất bản lên Google Play và App Store**, chạy tốt trên iPhone, iPad, điện thoại Android và máy tính bảng Android.
 
 **Người dùng mục tiêu:** mọi người bệnh — người trẻ bận rộn; người điều trị ngắn hạn hoặc dài hạn; người làm ca, hay di chuyển, đổi múi giờ; gia đình có con nhỏ; người cao tuổi; người thân theo dõi, chăm sóc.
 
 ## 2. TẦM NHÌN SẢN PHẨM
-- **Tên:** PillPal — Sổ y bạ cá nhân & Nhắc lịch uống thuốc.
+- **Tên (đã chốt): Kề Bên** — Sổ y bạ cá nhân & Nhắc lịch uống thuốc. Tên cũ "Kề Bên" đã bỏ vì trùng với nhiều app trên App Store.
+  - Tên hiển thị dưới biểu tượng app: **Kề Bên**. Định danh kỹ thuật không dấu: slug `ke-ben`, scheme `keben`, bundle id / package `com.<tên-tổ-chức>.keben`.
+  - Thư mục dự án trên máy đặt **không dấu, không khoảng trắng**: `KeBen` (đường dẫn có dấu tiếng Việt hoặc khoảng trắng dễ làm hỏng công cụ build).
 - **Mục tiêu cốt lõi:** giúp người bệnh
   1. không quên giờ uống thuốc và lịch tái khám;
   2. biết cần chuẩn bị gì trước khi đi khám;
@@ -30,7 +32,7 @@ Bạn là **Senior Mobile & Full-Stack Engineer** chuyên React Native (Expo), T
 3. **Tablet-first & responsive:** `width >= 768` → bố cục 2 cột Master-Detail; điện thoại → 1 cột. Hỗ trợ xoay ngang trên tablet. Giới hạn chiều rộng vùng đọc để nội dung không bị kéo giãn.
 4. **Giao diện Sáng / Tối:** màu chủ đạo **xanh navy**, có 3 lựa chọn **Theo hệ thống / Sáng / Tối** (chi tiết ở mục 4).
 5. **An toàn y tế:** luôn có Tuyên bố miễn trừ trách nhiệm y khoa (Medical Disclaimer) rõ ràng. App chỉ hỗ trợ ghi nhớ, chuẩn bị và quản lý thông tin cá nhân — **không chẩn đoán, không kê đơn, không gợi ý liều, không khuyên uống bù/gấp đôi liều, không kết luận tương tác thuốc**. Mọi cảnh báo dùng lời lẽ nhẹ nhàng và hướng người dùng hỏi bác sĩ/dược sĩ. Nội dung disclaimer chuẩn, dùng thống nhất trong app:
-   > "PillPal chỉ là công cụ hỗ trợ ghi nhớ, chuẩn bị và quản lý thông tin sức khỏe cá nhân. Ứng dụng không thay thế chẩn đoán, kê đơn hay chỉ định của bác sĩ, dược sĩ. Khi có dấu hiệu bất thường hoặc khẩn cấp, hãy liên hệ cơ sở y tế gần nhất hoặc gọi 115."
+   > "Kề Bên chỉ là công cụ hỗ trợ ghi nhớ, chuẩn bị và quản lý thông tin sức khỏe cá nhân. Ứng dụng không thay thế chẩn đoán, kê đơn hay chỉ định của bác sĩ, dược sĩ. Khi có dấu hiệu bất thường hoặc khẩn cấp, hãy liên hệ cơ sở y tế gần nhất hoặc gọi 115."
 6. **Quyền riêng tư & tuân thủ pháp luật Việt Nam:** dữ liệu sức khỏe là **dữ liệu cá nhân nhạy cảm** theo Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15 và Nghị định 356/2025/NĐ-CP. Không gửi dữ liệu ra khỏi thiết bị khi người dùng chưa bật đồng bộ/chia sẻ. Không analytics, quảng cáo hay tracking. Không hardcode secret. Mọi tính năng phải tuân theo mục 10 và `docs/LEGAL_COMPLIANCE_VN.md`.
 7. **Dễ tiếp cận (Accessibility):** đủ tương phản WCAG AA (chữ thường ≥ 4.5:1, chữ lớn và thành phần UI ≥ 3:1) ở cả Sáng và Tối; không truyền đạt trạng thái chỉ bằng màu (luôn kèm icon/chữ); có `accessibilityLabel`/`accessibilityRole` cho nút và icon; tôn trọng cỡ chữ hệ thống.
 
@@ -230,7 +232,7 @@ Giao diện (Theo hệ thống / Sáng / Tối) · Sick-Day Mode · Giờ sinh h
 Mỗi milestone được chia thành các bước nhỏ (VD: 1A, 1B, 1C). **Mỗi lần trả lời chỉ làm một bước.**
 
 ### Milestone 1 — Nền móng, theme navy Sáng/Tối, schema, màn hình chính & Sick-Day
-- **1A — Khởi tạo dự án & design system:** tạo dự án Expo + TypeScript strict + expo-router + ESLint; cấu trúc thư mục mục 5.3; `app.json` / `app.config.ts` (tên PillPal, `slug`, `scheme`, bundle id / package dạng placeholder để tôi điền, `userInterfaceStyle: "automatic"`, `ios.supportsTablet: true`, icon / splash nền navy cho Sáng và Tối); `eas.json`; `.gitignore`; `.env.example`; `README.md`. Theme: tokens mục 4, `ThemeProvider`, `useTheme`, theme cho React Navigation, các UI component cơ bản; màn hình Cài đặt có bộ chọn **Theo hệ thống / Sáng / Tối** (lưu tạm trong bộ nhớ, lưu bền ở 1B).
+- **1A — Khởi tạo dự án & design system:** tạo dự án Expo + TypeScript strict + expo-router + ESLint; cấu trúc thư mục mục 5.3; `app.json` / `app.config.ts` (tên Kề Bên, `slug`, `scheme`, bundle id / package dạng placeholder để tôi điền, `userInterfaceStyle: "automatic"`, `ios.supportsTablet: true`, icon / splash nền navy cho Sáng và Tối); `eas.json`; `.gitignore`; `.env.example`; `README.md`. Theme: tokens mục 4, `ThemeProvider`, `useTheme`, theme cho React Navigation, các UI component cơ bản; màn hình Cài đặt có bộ chọn **Theo hệ thống / Sáng / Tối** (lưu tạm trong bộ nhớ, lưu bền ở 1B).
 - **1B — SQLite:** kết nối DB, migration v1 với **toàn bộ** bảng ở mục 5.4, kiểu TypeScript tương ứng, repository cơ bản, dữ liệu mẫu tiếng Việt (2 hồ sơ, 2 đợt điều trị, 3–4 thuốc — trong đó 1 thuốc gây buồn ngủ và 1 thuốc sắp hết, 1 lịch tái khám trong 3 ngày tới, chỉ số huyết áp 7 ngày, vài triệu chứng, 1 dị ứng), hàm reset DB cho môi trường dev. Lưu cài đặt theme vào `app_settings`, giữ splash cho tới khi load xong. Bảng `consents` theo mục 10; bảng `family_links` và cột `remote_id` / `synced_at` sẵn cho Milestone 2.5 (chưa gọi mạng); màn hình "Dữ liệu (dev)" để xem số bản ghi, nạp lại dữ liệu mẫu, xóa sạch; không cài SDK analytics/crash report nào.
 - **1C — Màn hình chính & Sick-Day:** khung 5 tab (tab chưa làm hiển thị "Sẽ có ở Milestone X"); màn hình **Hôm nay** đọc dữ liệu thật từ SQLite; **Sick-Day Mode** (bật / tắt, lưu bền, giao diện tối giản chữ to); màn hình chào lần đầu mở app gồm Medical Disclaimer + Thông báo xử lý dữ liệu cá nhân (tóm tắt: dữ liệu chỉ lưu trên máy, quyền của người dùng) — người dùng chủ động bấm đồng ý (không tick sẵn), lưu phiên bản văn bản vào `consents`; hook `useResponsive` (breakpoint 768) và giới hạn chiều rộng nội dung trên tablet.
 - **DoD M1:** `npx expo start` chạy không lỗi trên iOS & Android; `tsc` và `lint` sạch; đổi Sáng / Tối tức thì, giữ nguyên sau khi tắt mở app, không nháy trắng; Sick-Day lưu bền và mọi chữ ≥ 18px; dữ liệu mẫu hiển thị đúng; cả 4 tổ hợp theme × Sick-Day đều đọc rõ.

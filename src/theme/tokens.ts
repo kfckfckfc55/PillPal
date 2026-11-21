@@ -1,5 +1,5 @@
 /**
- * Design tokens màu của PillPal — màu chủ đạo xanh navy.
+ * Design tokens màu của Kề Bên — màu chủ đạo xanh navy.
  *
  * Quy tắc:
  * - Component KHÔNG được hardcode mã màu; luôn lấy qua `useTheme().colors`.

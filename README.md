@@ -1,10 +1,10 @@
-# PillPal
+# Kề Bên
 
 **Sổ y bạ cá nhân, Nhắc lịch uống thuốc & Quản lý hành trình đi khám**, dành cho điện thoại và máy tính bảng (iOS, Android).
 
-> ⚠️ PillPal chỉ là công cụ hỗ trợ ghi nhớ, chuẩn bị và quản lý thông tin sức khỏe cá nhân. Ứng dụng không thay thế chẩn đoán, kê đơn hay chỉ định của bác sĩ, dược sĩ. Khi có dấu hiệu bất thường hoặc khẩn cấp, hãy liên hệ cơ sở y tế gần nhất hoặc gọi 115.
+> ⚠️ Kề Bên chỉ là công cụ hỗ trợ ghi nhớ, chuẩn bị và quản lý thông tin sức khỏe cá nhân. Ứng dụng không thay thế chẩn đoán, kê đơn hay chỉ định của bác sĩ, dược sĩ. Khi có dấu hiệu bất thường hoặc khẩn cấp, hãy liên hệ cơ sở y tế gần nhất hoặc gọi 115.
 
-Đặc tả đầy đủ của dự án: [`docs/PILLPAL_MASTER_PROMPT.md`](docs/PILLPAL_MASTER_PROMPT.md).
+Đặc tả đầy đủ của dự án: [`docs/KEBEN_MASTER_PROMPT.md`](docs/KEBEN_MASTER_PROMPT.md).
 Kế hoạch tuân thủ pháp luật Việt Nam (dữ liệu cá nhân, y tế, cửa hàng ứng dụng): [`docs/LEGAL_COMPLIANCE_VN.md`](docs/LEGAL_COMPLIANCE_VN.md).
 
 ## Công nghệ
@@ -26,6 +26,16 @@ Kế hoạch tuân thủ pháp luật Việt Nam (dữ liệu cá nhân, y tế,
 - (Tùy chọn) Android Studio Emulator hoặc Xcode Simulator (chỉ trên macOS).
 
 ## Chạy trên máy
+
+Lấy code về thư mục **`KeBen`** (không dấu, không khoảng trắng — đường dẫn có dấu tiếng Việt hoặc khoảng trắng dễ làm hỏng công cụ build):
+
+```bash
+git clone https://github.com/kfckfckfc55/PillPal.git KeBen
+```
+
+```bash
+cd KeBen
+```
 
 ```bash
 npm install
@@ -80,7 +90,7 @@ assets/images/            # Icon & splash nền navy (bản tạm, hoàn thiện
 
 ## Cơ sở dữ liệu trên máy
 
-- File `pillpal.db` (SQLite) nằm trong bộ nhớ riêng của app. Khi mở app: mở DB → chạy migration còn thiếu → **(chỉ khi phát triển) tự nạp dữ liệu mẫu nếu DB trống** → đọc cài đặt theme rồi mới tắt splash.
+- File `keben.db` (SQLite) nằm trong bộ nhớ riêng của app. Khi mở app: mở DB → chạy migration còn thiếu → **(chỉ khi phát triển) tự nạp dữ liệu mẫu nếu DB trống** → đọc cài đặt theme rồi mới tắt splash.
 - Thay đổi schema: **thêm file migration mới** trong `src/db/migrations/` và khai báo vào `MIGRATIONS`. Không sửa migration đã phát hành.
 - Màn hình **Cài đặt → Dành cho nhà phát triển → Dữ liệu (dev)**: xem số bản ghi từng bảng, nạp lại dữ liệu mẫu, xóa sạch.
 - Dữ liệu mẫu (2 hồ sơ, 4 thuốc, cữ thuốc 3 ngày qua + hôm nay, lịch tái khám sau 3 ngày, huyết áp 7 ngày…) là **giả**, tên thuốc chỉ để minh họa giao diện.
@@ -104,7 +114,7 @@ assets/images/            # Icon & splash nền navy (bản tạm, hoàn thiện
    eas login
    ```
 
-2. Đổi `ios.bundleIdentifier` và `android.package` trong `app.json` (hiện là placeholder `com.yourcompany.pillpal`) thành định danh của bạn, ví dụ `com.tencongty.pillpal`.
+2. Đổi `ios.bundleIdentifier` và `android.package` trong `app.json` (hiện là placeholder `com.yourcompany.keben`) thành định danh của bạn, ví dụ `com.tencongty.keben`.
 3. Liên kết dự án với tài khoản Expo (tự thêm `extra.eas.projectId` vào `app.json`):
 
    ```bash
@@ -132,4 +142,4 @@ Sao chép `.env.example` thành `.env` rồi điền giá trị. Chỉ biến `E
 - [ ] Bước 1C: Màn hình Hôm nay, Sick-Day Mode, màn hình chào (Medical Disclaimer + thông báo xử lý dữ liệu).
 - [ ] Milestone 2: Nhắc uống thuốc thông minh.
 - [ ] Milestone 2.5: Tài khoản (số điện thoại + OTP) & Gia đình (ông bà ghép máy bằng QR) với PocketBase.
-- [ ] Milestone 3 → 6: xem `docs/PILLPAL_MASTER_PROMPT.md`.
+- [ ] Milestone 3 → 6: xem `docs/KEBEN_MASTER_PROMPT.md`.

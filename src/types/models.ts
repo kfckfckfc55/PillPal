@@ -1,5 +1,5 @@
 /**
- * Kiểu dữ liệu domain của PillPal (camelCase).
+ * Kiểu dữ liệu domain của Kề Bên (camelCase).
  * Tương ứng 1-1 với các bảng SQLite trong `src/db/migrations/001_initial.ts` (snake_case).
  * Thời điểm: ISO 8601 UTC · Giờ trong ngày: "HH:mm" địa phương · Ngày: "YYYY-MM-DD" · Tiền: số nguyên VNĐ.
  */

@@ -3,7 +3,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 import type { Migration } from './types';
 
 /*
- * Migration v1 — toàn bộ schema của PillPal.
+ * Migration v1 — toàn bộ schema của Kề Bên.
  * Quy ước:
  * - id TEXT (UUID) · created_at / updated_at / deleted_at (xóa mềm) dạng ISO 8601 UTC.
  * - Bảng có thể đồng bộ cho gia đình: thêm remote_id, synced_at.
