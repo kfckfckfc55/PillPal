@@ -14,6 +14,7 @@ import { strings } from '@/constants/strings.vi';
 import { useDatabase } from '@/db/DatabaseProvider';
 import { getDatabaseStats, type DatabaseStats } from '@/db/repositories/devRepository';
 import { resetDatabase } from '@/db/reset';
+import { ServerCheckSection } from '@/features/settings/ServerCheckSection';
 import { refreshReminders } from '@/services/notifications/reminderService';
 import { useTheme } from '@/theme';
 
@@ -126,6 +127,8 @@ export default function DevDataScreen() {
           />
         </View>
       </Section>
+
+      <ServerCheckSection />
 
       <Section title={copy.tablesTitle}>
         {state.status === 'loading' ? <LoadingState /> : null}

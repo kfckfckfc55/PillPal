@@ -17,7 +17,7 @@ Kế hoạch tuân thủ pháp luật Việt Nam (dữ liệu cá nhân, y tế,
 | Giao diện | Theme navy tự xây, Sáng / Tối / Theo hệ thống, icon `@expo/vector-icons` |
 | Dữ liệu trên máy | `expo-sqlite` (offline-first, migration theo `PRAGMA user_version`) |
 | Thông báo | `expo-notifications` — **chỉ thông báo cục bộ** (tạo trên máy, không dùng push); `expo-localization` để nhận biết đổi múi giờ |
-| Máy chủ gia đình | PocketBase tự host — từ Milestone 2.5, khi phát triển chạy trên máy tính cá nhân |
+| Máy chủ gia đình | PocketBase **v0.40.6** tự host (`server/`) — khi phát triển chạy trên máy tính cá nhân, xem [`server/README.md`](server/README.md) |
 | Build | EAS Build (`eas.json`) |
 
 ## Yêu cầu
@@ -109,7 +109,9 @@ src/
     onboarding/           # Đồng ý bắt buộc (ghi bảng consents), rút lại đồng ý
     settings/
   constants/              # strings.vi.ts (chuỗi giao diện), disclaimer.ts (kèm phiên bản văn bản pháp lý)
-assets/images/            # Icon & splash nền navy (bản tạm, hoàn thiện ở Milestone 6)
+assets/images/            # Icon & splash nền navy (bản tạm, hoàn thiện ở Milestone 6), icon thông báo Android
+server/                   # Máy chủ gia đình PocketBase: pb_migrations/ (schema + luật truy cập),
+                          # pb_hooks/ (tính quyền xem), tests/rules.test.mjs, README.md (chạy trên macOS / Windows)
 ```
 
 ## Cơ sở dữ liệu trên máy
@@ -189,6 +191,13 @@ assets/images/            # Icon & splash nền navy (bản tạm, hoàn thiện
 
 Sao chép `.env.example` thành `.env` rồi điền giá trị. Chỉ biến `EXPO_PUBLIC_*` được nhúng vào app, nên **không** đặt secret vào đó.
 
+| Biến | Ý nghĩa |
+|---|---|
+| `EXPO_PUBLIC_POCKETBASE_URL` | Địa chỉ máy chủ gia đình, VD `http://192.168.1.10:8090` (IP máy tính trong Wi-Fi nhà). Để trống = app chạy offline hoàn toàn. |
+| `EXPO_PUBLIC_FAMILY_FEATURE` | `1` = bật tính năng gia đình. Mặc định `0`; chỉ bật khi thử nghiệm nội bộ với dữ liệu giả / người nhà đã đồng ý bằng văn bản, hoặc sau "Cổng pháp lý B". |
+
+Sửa `.env` xong phải khởi động lại với `npx expo start -c`.
+
 ## Tiến độ
 
 - [x] **Milestone 1 · Bước 1A**: Khởi tạo dự án Expo SDK 58 + TypeScript strict + expo-router + ESLint, cấu hình `app.json` / `eas.json`, hệ thống theme navy Sáng/Tối, bộ UI component, khung 5 tab, màn hình Cài đặt có chọn giao diện.
@@ -198,5 +207,9 @@ Sao chép `.env.example` thành `.env` rồi điền giá trị. Chỉ biến `E
   - [x] **Bước 2A**: Thêm / sửa / ngừng / xóa thuốc; giờ uống theo bữa ăn & giấc ngủ, giờ cố định hoặc cách đều; ngày trong tuần, liệu trình, số lượng, lưu ý buồn ngủ / chóng mặt, nhắc trùng dị ứng; **Giờ sinh hoạt** theo ngày làm / ngày nghỉ / làm ca + lịch tuần + đổi riêng hôm nay; tự sinh cữ cho 3 ngày; tạo hồ sơ đầu tiên; unit test (`jest-expo`).
   - [x] **Bước 2B**: Đã uống / Nhắc lại 10–15 phút / Đã uống lúc khác… / Bỏ qua (kèm lý do) / Hoàn tác ngay trên màn hình Hôm nay (và nút lớn ở chế độ Đang mệt); trừ & trả số viên; ghi phản ứng sau uống kèm lưu ý an toàn; cữ trễ ≥ 2 giờ nhắc "hỏi bác sĩ / dược sĩ" (không khuyên uống bù); tạm dừng có lý do + tự dùng lại; cữ ngày cũ chưa xác nhận → "Đã quên"; Lịch sử 7 ngày.
   - [x] **Bước 2C**: Thông báo cục bộ nhắc thuốc: màn hình giải thích trước khi xin quyền, kênh Android, nút Đã uống / Nhắc lại 10 phút / Bỏ qua (mở app để ghi nhận, kể cả khi app tắt), lên lịch cuốn chiếu ≤ 64 + nhắc mở app, ẩn tên thuốc, gửi thử; hỏi khi đổi múi giờ (theo giờ nơi mới / giữ khoảng cách như giờ cũ); hủy thông báo khi rút lại đồng ý.
-- [ ] Milestone 2.5: Tài khoản (số điện thoại + OTP) & Gia đình (ông bà ghép máy bằng QR) với PocketBase.
+- [ ] **Milestone 2.5**: Tài khoản (số điện thoại + OTP) & Gia đình (ông bà ghép máy bằng QR) với PocketBase.
+  - [x] **Bước 2.5A**: Máy chủ PocketBase v0.40.6 trong `server/`: migration tạo 6 collection (tài khoản con cháu / máy ông bà, hồ sơ chia sẻ chỉ có tên gọi, liên kết = bản ghi đồng ý từng quyền, thuốc, cữ), luật truy cập (chỉ máy ông bà ghi, con cháu chỉ đọc theo quyền, thu hồi mất quyền ngay), hook tính quyền xem, cài đặt an toàn (log không IP, giới hạn tần suất, xóa `users`); script kiểm tra 12 tình huống; README chạy trên macOS / Windows; app có nút kiểm tra kết nối máy chủ (chỉ khi phát triển).
+  - [ ] Bước 2.5B: Đăng nhập con cháu bằng số điện thoại + OTP (mã giả khi phát triển, giới hạn gửi mã), lưu phiên bằng `expo-secure-store`.
+  - [ ] Bước 2.5C: Ghép máy ông bà bằng QR / mã 6 số, màn hình đồng ý chữ to chọn từng quyền.
+  - [ ] Bước 2.5D: Đồng bộ tối thiểu, màn hình Gia đình, cảnh báo trễ cữ, thu hồi.
 - [ ] Milestone 3 → 6: xem `docs/KEBEN_MASTER_PROMPT.md`.

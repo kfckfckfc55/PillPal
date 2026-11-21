@@ -57,6 +57,19 @@ export const strings = {
     schemaVersion: (version: number) => `Phiên bản cơ sở dữ liệu: ${version}`,
     totalRecords: (total: number) => `Tổng số bản ghi: ${total}`,
     devOnly: 'Màn hình này chỉ dùng trong môi trường phát triển.',
+    server: {
+      title: 'Máy chủ gia đình (thử nghiệm)',
+      description:
+        'Kiểm tra điện thoại có kết nối được PocketBase đang chạy trên máy tính không. Chỉ gọi /api/health, không gửi dữ liệu cá nhân.',
+      notConfigured: 'Chưa đặt EXPO_PUBLIC_POCKETBASE_URL trong file .env',
+      featureOn: 'Tính năng gia đình: BẬT (EXPO_PUBLIC_FAMILY_FEATURE=1)',
+      featureOff: 'Tính năng gia đình: TẮT (mặc định)',
+      check: 'Kiểm tra kết nối máy chủ',
+      ok: (ms: number) => `Kết nối được máy chủ (${ms} ms).`,
+      failed: (detail: string) => `Không kết nối được: ${detail}`,
+      hints:
+        '• Điện thoại và máy tính cùng mạng Wi-Fi\n• Máy chủ chạy với --http=0.0.0.0:8090\n• Tường lửa máy tính cho phép PocketBase (mạng riêng)\n• Địa chỉ IP trong .env đúng với IP hiện tại của máy tính',
+    },
   },
 
   tabs: {
