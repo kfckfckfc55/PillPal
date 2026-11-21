@@ -87,6 +87,26 @@ export interface RoutineAnchor extends Timestamps {
   timeOfDay: string;
 }
 
+/** Loại ngày theo thứ trong tuần (0 = Chủ nhật … 6 = Thứ Bảy). Bảng cấu hình chỉ lưu trên máy. */
+export interface RoutineDayPattern {
+  id: string;
+  profileId: string;
+  weekday: number;
+  dayType: DayType;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Đổi loại ngày cho riêng một ngày ("YYYY-MM-DD"). */
+export interface RoutineDayOverride {
+  id: string;
+  profileId: string;
+  date: string;
+  dayType: DayType;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ---------- Đợt điều trị ----------
 
 export type JourneyStatus = 'active' | 'monitoring' | 'completed';
@@ -207,6 +227,8 @@ export interface DoseEvent extends Timestamps, SyncFields {
   medicationId: string;
   scheduleId: string | null;
   scheduledAt: string;
+  /** "Ô" của cữ: "<ngày sinh hoạt YYYY-MM-DD>#<thứ tự>" — null với cữ cũ chưa gắn ô. */
+  slotKey: string | null;
   status: DoseStatus;
   takenAt: string | null;
   snoozeUntil: string | null;

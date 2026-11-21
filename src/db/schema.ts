@@ -5,6 +5,8 @@ export const TABLE_NAMES = [
   'conditions',
   'emergency_contacts',
   'routine_anchors',
+  'routine_day_patterns',
+  'routine_day_overrides',
   'care_journeys',
   'documents',
   'prescriptions',

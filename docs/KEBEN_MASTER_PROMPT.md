@@ -14,7 +14,7 @@ Bạn là **Senior Mobile & Full-Stack Engineer** chuyên React Native (Expo), T
 **Người dùng mục tiêu:** mọi người bệnh — người trẻ bận rộn; người điều trị ngắn hạn hoặc dài hạn; người làm ca, hay di chuyển, đổi múi giờ; gia đình có con nhỏ; người cao tuổi; người thân theo dõi, chăm sóc.
 
 ## 2. TẦM NHÌN SẢN PHẨM
-- **Tên (đã chốt): Kề Bên** — Sổ y bạ cá nhân & Nhắc lịch uống thuốc. Tên cũ "Kề Bên" đã bỏ vì trùng với nhiều app trên App Store.
+- **Tên (đã chốt): Kề Bên** — Sổ y bạ cá nhân & Nhắc lịch uống thuốc. Tên cũ "PillPal" đã bỏ vì trùng với nhiều app trên App Store.
   - Tên hiển thị dưới biểu tượng app: **Kề Bên**. Định danh kỹ thuật không dấu: slug `ke-ben`, scheme `keben`, bundle id / package `com.<tên-tổ-chức>.keben`.
   - Thư mục dự án trên máy đặt **không dấu, không khoảng trắng**: `KeBen` (đường dẫn có dấu tiếng Việt hoặc khoảng trắng dễ làm hỏng công cụ build).
 - **Mục tiêu cốt lõi:** giúp người bệnh
@@ -238,6 +238,7 @@ Mỗi milestone được chia thành các bước nhỏ (VD: 1A, 1B, 1C). **Mỗ
 - **DoD M1:** `npx expo start` chạy không lỗi trên iOS & Android; `tsc` và `lint` sạch; đổi Sáng / Tối tức thì, giữ nguyên sau khi tắt mở app, không nháy trắng; Sick-Day lưu bền và mọi chữ ≥ 18px; dữ liệu mẫu hiển thị đúng; cả 4 tổ hợp theme × Sick-Day đều đọc rõ.
 
 ### Milestone 2 — Nhắc uống thuốc thông minh
+Chia nhỏ khi làm: **2A** thuốc, lịch uống, giờ sinh hoạt, sinh `dose_events`, unit test · **2B** thao tác trên cữ, đếm viên, tác dụng phụ, tạm dừng, lịch sử 7 ngày · **2C** thông báo cục bộ, đổi múi giờ.
 Thêm / sửa / xóa thuốc & lịch uống (giờ cố định / khung sinh hoạt); giờ sinh hoạt theo loại ngày; sinh `dose_events`; thao tác Đã uống / Nhắc lại 10–15 phút / Uống trễ lúc… / Bỏ qua / Hoàn tác; gắn tag tác dụng phụ + lưu ý an toàn; đếm viên, tiến độ liệu trình, cảnh báo sắp hết; tạm dừng có lý do & tự bật lại; xử lý đổi múi giờ; local notification theo mục 5.5 (quyền, channel, nút hành động, lên lịch cuốn chiếu, lên lịch lại); lịch sử uống 7 ngày; unit test cho logic tính lịch và đếm viên.
 - **DoD M2:** nhận thông báo đúng giờ trên máy thật (kể cả khi app tắt); bấm nút trên thông báo cập nhật đúng DB; số viên và tiến độ chính xác; khi tạm dừng không có thông báo; test pass.
 

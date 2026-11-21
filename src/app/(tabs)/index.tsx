@@ -1,7 +1,8 @@
 import { useState } from 'react';
 
-import { EmptyState, ErrorState, LoadingState, Screen } from '@/components/ui';
+import { ErrorState, LoadingState, Screen } from '@/components/ui';
 import { strings } from '@/constants/strings.vi';
+import { CreateProfileCard } from '@/features/profiles/CreateProfileCard';
 import { NormalHome } from '@/features/today/NormalHome';
 import { SickDayHome } from '@/features/today/SickDayHome';
 import { useTodayData } from '@/features/today/useTodayData';
@@ -41,13 +42,10 @@ export default function TodayScreen() {
   }
 
   if (state.status === 'empty') {
+    // Bản cài mới (không có dữ liệu mẫu): tạo hồ sơ đầu tiên rồi tải lại màn hình.
     return (
-      <Screen centered>
-        <EmptyState
-          icon="person-add-outline"
-          title={copy.noProfileTitle}
-          description={copy.noProfileDescription}
-        />
+      <Screen centered keyboardAware>
+        <CreateProfileCard onCreated={retry} />
       </Screen>
     );
   }

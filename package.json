@@ -20,9 +20,12 @@
     "react-native-screens": "~4.30.1"
   },
   "devDependencies": {
+    "@jest/globals": "^30.5.2",
     "@types/react": "~19.3.0",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~58.0.4",
+    "jest": "^30.5.2",
+    "jest-expo": "~58.0.15",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -31,7 +34,18 @@
     "ios": "expo start --ios",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "check": "npm run typecheck && npm run lint"
+    "test": "jest",
+    "check": "npm run typecheck && npm run lint && npm run test"
   },
-  "private": true
+  "private": true,
+  "jest": {
+    "preset": "jest-expo",
+    "globalSetup": "<rootDir>/jest.global-setup.js",
+    "testMatch": [
+      "<rootDir>/src/**/__tests__/**/*.test.ts?(x)"
+    ],
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1"
+    }
+  }
 }

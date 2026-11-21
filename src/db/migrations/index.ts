@@ -1,10 +1,14 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
 import { migration001Initial } from './001_initial';
+import { migration002RoutineDaysAndDoseSlots } from './002_routine_days_and_dose_slots';
 import type { Migration } from './types';
 
 /** Danh sách migration theo thứ tự. Thêm migration mới vào CUỐI, không sửa migration đã phát hành. */
-export const MIGRATIONS: readonly Migration[] = [migration001Initial];
+export const MIGRATIONS: readonly Migration[] = [
+  migration001Initial,
+  migration002RoutineDaysAndDoseSlots,
+];
 
 export const LATEST_SCHEMA_VERSION = MIGRATIONS[MIGRATIONS.length - 1]?.version ?? 0;
 

@@ -2,21 +2,19 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 
 import type { BindValue } from '@/db/client';
 import type { TableName } from '@/db/schema';
+import {
+  DEFAULT_WEEK_PATTERN,
+  scheduleOccurrencesForDay,
+  type RoutineConfig,
+} from '@/features/medications/scheduling';
 import type {
   DayType,
   DoseStatus,
+  Medication,
+  MedicationSchedule,
   RoutineAnchorKind,
 } from '@/types/models';
-import {
-  addDays,
-  addMinutes,
-  atLocalTime,
-  formatTimeOfDay,
-  isWeekend,
-  parseTimeOfDay,
-  startOfLocalDay,
-  toLocalDateKey,
-} from '@/utils/date';
+import { addDays, addMinutes, atLocalTime, startOfLocalDay, toLocalDateKey } from '@/utils/date';
 import { newId } from '@/utils/id';
 
 /*
@@ -62,16 +60,57 @@ interface SeedMedication {
   schedules: SeedSchedule[];
 }
 
-/** Giờ của một cữ theo ngày cụ thể (giờ cố định hoặc mốc sinh hoạt + độ lệch). */
-function resolveDoseTime(schedule: SeedSchedule, day: Date, routines: RoutineTable): Date {
-  if (schedule.kind === 'fixed') {
-    return atLocalTime(day, schedule.time ?? '08:00');
-  }
-  const dayType: DayType = isWeekend(day) ? 'day_off' : 'workday';
-  const anchorTime =
-    routines[dayType][schedule.anchor ?? 'breakfast'] ?? routines.workday[schedule.anchor ?? 'breakfast'];
-  const minutes = parseTimeOfDay(anchorTime ?? '07:00') + (schedule.offsetMinutes ?? 0);
-  return atLocalTime(day, formatTimeOfDay(minutes));
+/** Mô hình thuốc / lịch uống để tính giờ cữ bằng đúng bộ tính lịch của app (một nguồn duy nhất). */
+function toMedicationModel(med: SeedMedication, stamp: string): Medication {
+  return {
+    id: med.id,
+    profileId: med.profileId,
+    journeyId: med.journeyId,
+    name: med.name,
+    activeIngredient: null,
+    strength: med.strength,
+    form: med.form,
+    doseAmount: 1,
+    doseUnit: 'viên',
+    instructions: med.instructions,
+    mealRelation: med.mealRelation,
+    causesDrowsiness: med.causesDrowsiness ?? false,
+    causesDizziness: false,
+    startDate: toLocalDateKey(med.startDate),
+    durationDays: med.durationDays,
+    quantityOnHand: med.quantityOnHand,
+    lowStockThresholdDays: 3,
+    isActive: true,
+    remoteId: null,
+    syncedAt: null,
+    createdAt: stamp,
+    updatedAt: stamp,
+    deletedAt: null,
+  };
+}
+
+function toScheduleModel(medicationId: string, schedule: SeedSchedule, stamp: string): MedicationSchedule {
+  return {
+    id: schedule.id,
+    medicationId,
+    scheduleType: schedule.kind === 'fixed' ? 'fixed_time' : 'routine_anchor',
+    timeOfDay: schedule.kind === 'fixed' ? (schedule.time ?? '08:00') : null,
+    anchor: schedule.kind === 'routine' ? (schedule.anchor ?? 'breakfast') : null,
+    offsetMinutes: schedule.offsetMinutes ?? 0,
+    intervalHours: null,
+    daysOfWeek: null,
+    dayType: null,
+    doseAmount: null,
+    remoteId: null,
+    syncedAt: null,
+    createdAt: stamp,
+    updatedAt: stamp,
+    deletedAt: null,
+  };
+}
+
+function toRoutineConfig(routines: RoutineTable): RoutineConfig {
+  return { anchors: routines, weekPattern: DEFAULT_WEEK_PATTERN, overrides: {} };
 }
 
 /** Nạp toàn bộ dữ liệu mẫu trong một transaction (lỗi thì không ghi gì). */
@@ -387,7 +426,8 @@ export async function seedSampleData(db: SQLiteDatabase, now: Date = new Date())
         });
       }
 
-      const routines = med.profileId === ids.an ? routinesAn : routinesBinh;
+      const routineConfig = toRoutineConfig(med.profileId === ids.an ? routinesAn : routinesBinh);
+      const medicationModel = toMedicationModel(med, stamp);
       for (const schedule of med.schedules) {
         await insert(db, 'medication_schedules', {
           id: schedule.id,
@@ -399,9 +439,17 @@ export async function seedSampleData(db: SQLiteDatabase, now: Date = new Date())
           ...base,
         });
 
-        // 3 ngày trước → hết hôm nay.
+        // 3 ngày trước → hết hôm nay (các ngày sau do đồng bộ cữ tự sinh khi mở màn hình Hôm nay).
+        const scheduleModel = toScheduleModel(med.id, schedule, stamp);
         for (let offset = -3; offset <= 0; offset += 1) {
-          const scheduledAt = resolveDoseTime(schedule, day(offset), routines);
+          const [occurrence] = scheduleOccurrencesForDay(
+            medicationModel,
+            scheduleModel,
+            day(offset),
+            routineConfig,
+          );
+          if (!occurrence) continue;
+          const { scheduledAt } = occurrence;
           let status: DoseStatus = 'pending';
           let takenAt: string | null = null;
 
@@ -424,6 +472,7 @@ export async function seedSampleData(db: SQLiteDatabase, now: Date = new Date())
             medication_id: med.id,
             schedule_id: schedule.id,
             scheduled_at: scheduledAt.toISOString(),
+            slot_key: occurrence.slotKey,
             status,
             taken_at: takenAt,
             ...base,

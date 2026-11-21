@@ -15,10 +15,14 @@ import {
 } from '@/db/repositories/healthProfileRepository';
 import { listActiveMedications, listSchedulesForProfile } from '@/db/repositories/medicationRepository';
 import { listProfiles } from '@/db/repositories/profileRepository';
+import { loadRoutineConfig } from '@/db/repositories/routineRepository';
+import { syncDoseEvents } from '@/features/medications/doseSyncService';
+import { resolveDayType } from '@/features/medications/scheduling';
 import type {
   Allergy,
   Appointment,
   Condition,
+  DayType,
   EmergencyContact,
   Medication,
   MedicationSchedule,
@@ -30,6 +34,8 @@ export interface TodayData {
   now: Date;
   profiles: Profile[];
   profile: Profile;
+  /** Loại ngày hôm nay của hồ sơ (quyết định giờ của các thuốc uống theo sinh hoạt). */
+  dayType: DayType;
   doses: DoseEventWithMedication[];
   medications: Medication[];
   schedules: MedicationSchedule[];
@@ -45,7 +51,10 @@ export type TodayState =
   | { status: 'error'; message: string }
   | { status: 'ready'; data: TodayData };
 
-/** Đọc toàn bộ dữ liệu cho màn hình Hôm nay của một hồ sơ (null = hồ sơ mặc định). */
+/**
+ * Đọc toàn bộ dữ liệu cho màn hình Hôm nay của một hồ sơ (null = hồ sơ mặc định).
+ * Trước khi đọc, đồng bộ cữ thuốc với lịch uống (sinh cữ cho ngày mới, dời cữ khi lịch đổi).
+ */
 export async function loadTodayData(
   db: SQLiteDatabase,
   profileId: string | null,
@@ -55,10 +64,15 @@ export async function loadTodayData(
   const profile = profiles.find((item) => item.id === profileId) ?? profiles[0];
   if (!profile) return null;
 
+  // Lỗi đồng bộ cữ không được chặn việc xem dữ liệu đã có (vẫn hiện các cữ đã lưu).
+  await syncDoseEvents(db, now).catch((error: unknown) => {
+    console.warn('[today] Không đồng bộ được cữ thuốc', error);
+  });
+
   const dayStart = startOfLocalDay(now);
   const dayEnd = addDays(dayStart, 1);
 
-  const [doses, medications, schedules, nextAppointment, allergies, conditions, contacts] =
+  const [doses, medications, schedules, nextAppointment, allergies, conditions, contacts, routine] =
     await Promise.all([
       listDoseEventsBetween(db, profile.id, dayStart.toISOString(), dayEnd.toISOString()),
       listActiveMedications(db, profile.id),
@@ -67,12 +81,14 @@ export async function loadTodayData(
       listAllergies(db, profile.id),
       listConditions(db, profile.id),
       listEmergencyContacts(db, profile.id),
+      loadRoutineConfig(db, profile.id),
     ]);
 
   return {
     now,
     profiles,
     profile,
+    dayType: resolveDayType(now, routine),
     doses,
     medications,
     schedules,

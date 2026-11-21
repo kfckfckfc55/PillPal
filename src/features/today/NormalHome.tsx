@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 
 import { AppText, Button, Card, EmptyState, Screen } from '@/components/ui';
@@ -31,9 +32,16 @@ export interface NormalHomeProps {
 
 /** Màn hình Hôm nay ở chế độ thường. Màn hình rộng (tablet / xoay ngang) → 2 cột. */
 export function NormalHome({ data, refreshing, onRefresh, onSelectProfile, onEnableSickDay }: NormalHomeProps) {
+  const router = useRouter();
   const { spacing } = useTheme();
   const { isWide } = useResponsive();
   const { now, profile, doses, medications, schedules } = data;
+
+  const openAddMedication = () =>
+    router.push({ pathname: '/medications/new', params: { profileId: profile.id } });
+  const openMedicationList = () =>
+    router.push({ pathname: '/medications', params: { profileId: profile.id } });
+  const openRoutine = () => router.push({ pathname: '/routine', params: { profileId: profile.id } });
 
   const groups = groupDosesByPeriod(doses);
   const progress = getDayProgress(doses);
@@ -45,10 +53,24 @@ export function NormalHome({ data, refreshing, onRefresh, onSelectProfile, onEna
 
   const doseColumn = (
     <View style={{ gap: spacing.lg }}>
-      <AppText variant="title">{copy.dosesTitle}</AppText>
+      <View style={{ gap: spacing.xs }}>
+        <AppText variant="title">{copy.dosesTitle}</AppText>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: spacing.sm }}>
+          <AppText variant="bodySmall" color="textSecondary">
+            {copy.dayTypeLine(strings.routine.dayTypes[data.dayType])}
+          </AppText>
+          <Button title={copy.editRoutine} icon="time-outline" variant="ghost" onPress={openRoutine} />
+        </View>
+      </View>
       {doses.length === 0 ? (
         <Card>
-          <EmptyState icon="medkit-outline" title={copy.emptyTitle} description={copy.emptyDescription} />
+          <EmptyState
+            icon="medkit-outline"
+            title={copy.emptyTitle}
+            description={copy.emptyDescription}
+            actionLabel={strings.medications.addMedication}
+            onAction={openAddMedication}
+          />
         </Card>
       ) : (
         <>
@@ -76,6 +98,15 @@ export function NormalHome({ data, refreshing, onRefresh, onSelectProfile, onEna
           </AppText>
         </>
       )}
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
+        <Button title={strings.medications.addMedication} icon="add-circle-outline" onPress={openAddMedication} />
+        <Button
+          title={strings.medications.manageMedications}
+          icon="list-outline"
+          variant="outline"
+          onPress={openMedicationList}
+        />
+      </View>
     </View>
   );
 

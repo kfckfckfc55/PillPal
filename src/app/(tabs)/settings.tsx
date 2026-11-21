@@ -73,6 +73,23 @@ export default function SettingsScreen() {
         />
       </Section>
 
+      <Section title={copy.medicationTitle}>
+        <Button
+          title={copy.openMedications}
+          icon="medkit-outline"
+          variant="outline"
+          fullWidth
+          onPress={() => router.push('/medications')}
+        />
+        <Button
+          title={copy.openRoutine}
+          icon="time-outline"
+          variant="outline"
+          fullWidth
+          onPress={() => router.push('/routine')}
+        />
+      </Section>
+
       <Section title={copy.privacyTitle}>
         <Card>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>

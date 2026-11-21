@@ -91,7 +91,7 @@ Nhà phát triển trở thành bên kiểm soát/xử lý **dữ liệu nhạy 
 |---|---|
 | **1B** | Thêm bảng `consents`; lưu phiên bản Disclaimer/Chính sách đã chấp nhận; không lưu số CCCD/BHYT; không cài bất kỳ SDK analytics/crash nào |
 | **1C** | Màn hình chào lần đầu: Medical Disclaimer + Thông báo xử lý dữ liệu (tóm tắt, dữ liệu chỉ lưu trên máy) → người dùng chủ động bấm đồng ý, không tick sẵn |
-| **2** | Giải thích trước khi xin quyền thông báo; tùy chọn ẩn tên thuốc |
+| **2** | **2A:** hồ sơ đầu tiên chỉ hỏi tên gọi (có thể là biệt danh); giờ sinh hoạt (dữ liệu thói quen) chỉ lưu trên máy; đối chiếu dị ứng chỉ là nhắc nhở từ ghi chép của người dùng, không kết luận; nút ngừng thuốc nhắc "chỉ ngừng theo chỉ định của bác sĩ"; không tự đặt liều mặc định theo tên thuốc. **2B:** không khuyên uống bù / gấp đôi liều. **2C:** giải thích trước khi xin quyền thông báo; tùy chọn ẩn tên thuốc; thông báo cục bộ (không qua máy chủ) |
 | **3** | Lời nhắc xin phép trước khi ghi âm; cảnh báo nhẹ khi chụp giấy tờ có thông tin người khác; xác nhận quyền quản lý hồ sơ khi tạo hồ sơ thành viên |
 | **4** | File lưu trong thư mục riêng của app; xuất PDF/ảnh kèm cảnh báo "bản này chứa thông tin sức khỏe, chỉ gửi cho người tin cậy"; chức năng xuất toàn bộ dữ liệu |
 | **2.5** | Màn hình đồng ý chữ to trên máy ông bà, chọn từng quyền, thu hồi được; chỉ đồng bộ phần tối thiểu (thuốc, trạng thái cữ); thông báo đẩy không chứa tên thuốc; giới hạn gửi OTP; chỉ thử với dữ liệu giả hoặc người nhà đã đồng ý bằng văn bản |

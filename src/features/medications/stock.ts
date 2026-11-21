@@ -1,21 +1,16 @@
 import type { Medication, MedicationSchedule } from '@/types/models';
 import { differenceInCalendarDays, parseLocalDateKey } from '@/utils/date';
 
+import { averageDosesPerDay } from './scheduling';
+
 /**
- * Tính toán tồn kho & tiến độ liệu trình (hàm thuần, không đọc DB).
- * Đây là bản ước lượng cho màn hình Hôm nay; Milestone 2 sẽ trừ số viên chính xác theo từng lần uống.
+ * Tính toán tồn kho & tiến độ liệu trình (hàm thuần, không đọc DB — có unit test).
+ * Số ngày còn đủ thuốc là ước lượng theo lịch uống; bước 2B trừ số viên mỗi lần bấm "Đã uống".
  */
 
-/** Số lần uống trung bình mỗi ngày của một lịch. */
+/** Số lần uống trung bình mỗi ngày của một lịch (lịch chỉ uống vài ngày/tuần được chia đều). */
 export function dosesPerDay(schedule: MedicationSchedule): number {
-  if (schedule.scheduleType === 'interval') {
-    return schedule.intervalHours ? 24 / schedule.intervalHours : 0;
-  }
-  if (schedule.daysOfWeek) {
-    const days = schedule.daysOfWeek.split(',').filter((day) => day.trim() !== '').length;
-    return days / 7;
-  }
-  return 1;
+  return averageDosesPerDay(schedule);
 }
 
 /** Lượng thuốc dùng mỗi ngày (theo đơn vị của thuốc, VD: viên). */

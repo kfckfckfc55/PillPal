@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
-import { RefreshControl, ScrollView, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Platform, RefreshControl, ScrollView, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
 import { layout, useTheme } from '@/theme';
 
 export interface ScreenProps {
@@ -17,6 +18,8 @@ export interface ScreenProps {
   /** Kéo xuống để làm mới. */
   refreshing?: boolean;
   onRefresh?: () => void;
+  /** Màn hình có ô nhập: chừa chỗ cho bàn phím để không che ô đang gõ. */
+  keyboardAware?: boolean;
   contentStyle?: StyleProp<ViewStyle>;
 }
 
@@ -29,17 +32,20 @@ export function Screen({
   maxWidth = layout.contentMaxWidth,
   refreshing = false,
   onRefresh,
+  keyboardAware = false,
   contentStyle,
 }: ScreenProps) {
   const { colors, spacing } = useTheme();
   const insets = useSafeAreaInsets();
+  // iOS: ScrollView tự xử lý (automaticallyAdjustKeyboardInsets). Android: thêm khoảng đệm bằng chiều cao bàn phím.
+  const androidKeyboard = useKeyboardHeight(keyboardAware && Platform.OS === 'android');
 
   const innerStyle: ViewStyle = {
     width: '100%',
     maxWidth,
     alignSelf: 'center',
     padding: spacing.lg,
-    paddingBottom: spacing.xl + (safeBottom ? insets.bottom : 0),
+    paddingBottom: spacing.xl + (safeBottom ? insets.bottom : 0) + androidKeyboard,
     gap: spacing.lg,
     flexGrow: 1,
     justifyContent: centered ? 'center' : 'flex-start',
@@ -58,6 +64,8 @@ export function Screen({
       style={{ flex: 1, backgroundColor: colors.background }}
       contentContainerStyle={[innerStyle, contentStyle]}
       keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="interactive"
+      automaticallyAdjustKeyboardInsets={keyboardAware}
       refreshControl={
         onRefresh ? (
           <RefreshControl

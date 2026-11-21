@@ -56,8 +56,11 @@ npx expo start
 ```bash
 npm run typecheck   # TypeScript (tsc --noEmit)
 npm run lint        # ESLint (eslint-config-expo)
-npm run check       # Chạy cả hai
+npm test            # Unit test (jest-expo): tính lịch uống, đồng bộ cữ, đếm viên, form thuốc, giờ sinh hoạt
+npm run check       # Chạy cả ba
 ```
+
+Unit test chạy với múi giờ cố định `Asia/Ho_Chi_Minh` (`jest.global-setup.js`) nên kết quả giống nhau trên mọi máy. Test đặt trong thư mục `__tests__/` cạnh code (không đặt trong `src/app/`).
 
 Cài thư viện mới **luôn** dùng `npx expo install <tên-gói>` để có phiên bản tương thích SDK.
 
@@ -69,11 +72,13 @@ src/
     _layout.tsx           # Khởi động (mở DB, migration, đọc cài đặt) + Provider + Stack gốc
     (tabs)/               # 5 tab: Hôm nay · Đợt điều trị · Lịch khám · Sức khỏe · Cài đặt
     welcome.tsx           # Màn hình chào: Medical Disclaimer + thông báo xử lý dữ liệu (bắt buộc đồng ý)
+    medications/          # Danh sách thuốc · Thêm thuốc (new) · Sửa thuốc ([id])
+    routine.tsx           # Giờ sinh hoạt theo loại ngày, lịch trong tuần, đổi riêng hôm nay / ngày mai
     design-preview.tsx    # Xem bộ giao diện (chỉ dùng khi phát triển)
     dev-data.tsx          # Xem / nạp lại / xóa dữ liệu (chỉ dùng khi phát triển)
   db/
     client.ts             # Mở SQLite, bật WAL + khóa ngoại
-    migrations/           # 001_initial.ts (28 bảng), index.ts (chạy migration)
+    migrations/           # 001_initial.ts (28 bảng), 002 (loại ngày + "ô" của cữ thuốc), index.ts
     repositories/         # Đọc/ghi theo từng nhóm dữ liệu (UI không viết SQL trực tiếp)
     seed.ts · reset.ts    # Dữ liệu mẫu & xóa sạch (chỉ dev)
     DatabaseProvider.tsx  # useDatabase()
@@ -81,12 +86,15 @@ src/
   types/models.ts         # Kiểu dữ liệu domain
   utils/                  # date.ts, id.ts, format.ts (giờ 24h, dd/MM/yyyy, thứ tiếng Việt)
   theme/                  # tokens.ts (màu navy), typography.ts, layout.ts, ThemeProvider, useTheme
-  components/ui/          # AppText, Button, Card, Chip, Badge, RadioGroup, SwitchRow, Screen, Section,
-                          # EmptyState, LoadingState, ErrorState, AppIcon
+  components/ui/          # AppText, Button, Card, Chip, ChipGroup, Badge, RadioGroup, SwitchRow, Screen, Section,
+                          # EmptyState, LoadingState, ErrorState, AppIcon, TextField, NumberField, TimeField, DateField
   components/             # Component ghép (PlaceholderScreen…)
   features/
     today/                # Màn hình Hôm nay (thường + Đang mệt), nhóm cữ theo khung giờ, trạng thái cữ
-    medications/stock.ts  # Ước lượng tồn kho, tiến độ liệu trình
+    medications/          # scheduling.ts (tính giờ cữ), doseSync.ts (đồng bộ cữ), medicationForm.ts, stock.ts,
+                          # allergyCheck.ts, scheduleText.ts, components/ (form, danh sách) + __tests__/
+    routine/              # Kiểm tra giờ sinh hoạt
+    profiles/             # Tạo hồ sơ đầu tiên, lấy hồ sơ theo route
     onboarding/           # Đồng ý bắt buộc (ghi bảng consents), rút lại đồng ý
     settings/
   constants/              # strings.vi.ts (chuỗi giao diện), disclaimer.ts (kèm phiên bản văn bản pháp lý)
@@ -99,13 +107,15 @@ assets/images/            # Icon & splash nền navy (bản tạm, hoàn thiện
 - Thay đổi schema: **thêm file migration mới** trong `src/db/migrations/` và khai báo vào `MIGRATIONS`. Không sửa migration đã phát hành.
 - Màn hình **Cài đặt → Dành cho nhà phát triển → Dữ liệu (dev)**: xem số bản ghi từng bảng, nạp lại dữ liệu mẫu, xóa sạch.
 - Dữ liệu mẫu (2 hồ sơ, 4 thuốc, cữ thuốc 3 ngày qua + hôm nay, lịch tái khám sau 3 ngày, huyết áp 7 ngày…) là **giả**, tên thuốc chỉ để minh họa giao diện.
+- **Cữ thuốc (`dose_events`)** được sinh tự động cho hôm nay + 2 ngày tới mỗi khi mở màn hình Hôm nay và sau mỗi lần sửa thuốc / giờ sinh hoạt. Mỗi cữ có một "ô" (`slot_key` = ngày + thứ tự): đổi giờ thì cữ chưa uống được dời, cữ đã uống / bỏ qua giữ nguyên và **không sinh thêm cữ trong cùng ngày** (tránh nhắc uống trùng liều). Thêm thuốc lúc 10:00 thì không hiện cữ 08:00 sáng hôm đó.
+- Bản cài mới (không có dữ liệu mẫu): màn hình Hôm nay hỏi **tên gọi** để tạo hồ sơ đầu tiên.
 
 ## Theme navy & chế độ Sáng/Tối
 
 - Mọi màu nằm trong `src/theme/tokens.ts` (đã kiểm tra tương phản WCAG AA). **Không** hardcode mã màu trong component; dùng `useTheme().colors`.
-- Người dùng chọn **Theo hệ thống / Sáng / Tối** trong tab Cài đặt. Bước 1B sẽ lưu lựa chọn này vào SQLite.
+- Người dùng chọn **Theo hệ thống / Sáng / Tối** trong tab Cài đặt; lựa chọn được lưu trong SQLite.
 - `app.json` dùng `"userInterfaceStyle": "automatic"`; `expo-system-ui` đổi màu nền gốc theo theme để không nháy trắng.
-- **Sick-Day Mode** (Chế độ Đang mệt) phóng to chữ (≥ 18px) và nút (cao 56dp). Bước 1A chỉ có công tắc xem trước ở màn hình *Bộ giao diện mẫu*; bước 1C sẽ làm bản chính thức.
+- **Sick-Day Mode** (Chế độ Đang mệt) phóng to chữ (≥ 18px) và nút (cao 56dp), ẩn thanh tab, chỉ giữ việc cần thiết; bật/tắt ở màn hình Hôm nay hoặc Cài đặt và được lưu lại.
 
 ## Build bằng EAS
 
@@ -145,6 +155,9 @@ Sao chép `.env.example` thành `.env` rồi điền giá trị. Chỉ biến `E
 - [x] **Milestone 1 · Bước 1A**: Khởi tạo dự án Expo SDK 58 + TypeScript strict + expo-router + ESLint, cấu hình `app.json` / `eas.json`, hệ thống theme navy Sáng/Tối, bộ UI component, khung 5 tab, màn hình Cài đặt có chọn giao diện.
 - [x] **Bước 1B**: SQLite với 28 bảng (sẵn chỗ cho tài khoản & gia đình: `family_links`, `remote_id`, `synced_at`), migration, repository cơ bản, dữ liệu mẫu tiếng Việt, màn hình Dữ liệu (dev), lưu theme & Sick-Day vào máy, giữ splash tới khi tải xong.
 - [x] **Bước 1C**: Màn hình chào bắt buộc đồng ý (không tick sẵn, lưu phiên bản vào `consents`, rút lại được trong Cài đặt); màn hình **Hôm nay** đọc dữ liệu thật (cữ thuốc theo khung giờ, trạng thái, tiến độ, cảnh báo buồn ngủ, sắp hết thuốc, lịch khám đếm ngược, chọn hồ sơ); **chế độ Đang mệt** (ẩn tab, chữ to, gọi người thân / 115, thông tin khẩn cấp); bố cục 2 cột trên màn hình rộng.
-- [ ] Milestone 2: Nhắc uống thuốc thông minh.
+- [ ] **Milestone 2**: Nhắc uống thuốc thông minh.
+  - [x] **Bước 2A**: Thêm / sửa / ngừng / xóa thuốc; giờ uống theo bữa ăn & giấc ngủ, giờ cố định hoặc cách đều; ngày trong tuần, liệu trình, số lượng, lưu ý buồn ngủ / chóng mặt, nhắc trùng dị ứng; **Giờ sinh hoạt** theo ngày làm / ngày nghỉ / làm ca + lịch tuần + đổi riêng hôm nay; tự sinh cữ cho 3 ngày; tạo hồ sơ đầu tiên; unit test (`jest-expo`).
+  - [ ] Bước 2B: Đã uống / Nhắc lại / Uống trễ lúc… / Bỏ qua / Hoàn tác, trừ số viên, tác dụng phụ, tạm dừng có lý do, lịch sử 7 ngày.
+  - [ ] Bước 2C: Thông báo nhắc thuốc (quyền, kênh Android, nút trên thông báo, lên lịch cuốn chiếu), đổi múi giờ.
 - [ ] Milestone 2.5: Tài khoản (số điện thoại + OTP) & Gia đình (ông bà ghép máy bằng QR) với PocketBase.
 - [ ] Milestone 3 → 6: xem `docs/KEBEN_MASTER_PROMPT.md`.

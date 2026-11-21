@@ -109,6 +109,10 @@ function RootNavigator() {
         {/* Chưa đồng ý Medical Disclaimer + thông báo xử lý dữ liệu → chỉ vào được màn hình chào. */}
         <Stack.Protected guard={accepted}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="medications/index" options={{ title: strings.medications.listScreenTitle }} />
+          <Stack.Screen name="medications/new" options={{ title: strings.medications.newScreenTitle }} />
+          <Stack.Screen name="medications/[id]" options={{ title: strings.medications.editScreenTitle }} />
+          <Stack.Screen name="routine" options={{ title: strings.routine.screenTitle }} />
           <Stack.Screen name="design-preview" options={{ title: strings.designPreview.screenTitle }} />
           <Stack.Screen name="dev-data" options={{ title: strings.devData.screenTitle }} />
         </Stack.Protected>
