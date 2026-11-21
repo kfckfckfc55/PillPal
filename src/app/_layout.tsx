@@ -12,6 +12,7 @@ import {
   saveThemePreference,
   type PersistedAppSettings,
 } from '@/db/repositories/settingsRepository';
+import { ConsentProvider, useConsent } from '@/features/onboarding/ConsentProvider';
 import { useAppBootstrap } from '@/hooks/useAppBootstrap';
 import { ThemeProvider, useTheme, type ThemePreference } from '@/theme';
 
@@ -36,9 +37,11 @@ export default function RootLayout() {
 
   return (
     <DatabaseProvider db={bootstrap.db}>
-      <PersistedThemeProvider db={bootstrap.db} settings={bootstrap.settings}>
-        <RootNavigator />
-      </PersistedThemeProvider>
+      <ConsentProvider db={bootstrap.db} initialStatus={bootstrap.consent}>
+        <PersistedThemeProvider db={bootstrap.db} settings={bootstrap.settings}>
+          <RootNavigator />
+        </PersistedThemeProvider>
+      </ConsentProvider>
     </DatabaseProvider>
   );
 }
@@ -85,6 +88,7 @@ function PersistedThemeProvider({
 
 function RootNavigator() {
   const { scheme, colors, typography, navigationTheme } = useTheme();
+  const { accepted } = useConsent();
 
   return (
     <NavigationThemeProvider value={navigationTheme}>
@@ -102,9 +106,15 @@ function RootNavigator() {
           contentStyle: { backgroundColor: colors.background },
         }}
       >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="design-preview" options={{ title: strings.designPreview.screenTitle }} />
-        <Stack.Screen name="dev-data" options={{ title: strings.devData.screenTitle }} />
+        {/* Chưa đồng ý Medical Disclaimer + thông báo xử lý dữ liệu → chỉ vào được màn hình chào. */}
+        <Stack.Protected guard={accepted}>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="design-preview" options={{ title: strings.designPreview.screenTitle }} />
+          <Stack.Screen name="dev-data" options={{ title: strings.devData.screenTitle }} />
+        </Stack.Protected>
+        <Stack.Protected guard={!accepted}>
+          <Stack.Screen name="welcome" options={{ title: strings.welcome.headerTitle }} />
+        </Stack.Protected>
       </Stack>
     </NavigationThemeProvider>
   );

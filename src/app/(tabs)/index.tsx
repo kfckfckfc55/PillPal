@@ -1,40 +1,64 @@
-import { useRouter } from 'expo-router';
-import { View } from 'react-native';
+import { useState } from 'react';
 
-import { AppText, Badge, Button, Card, EmptyState, Screen } from '@/components/ui';
-import { MEDICAL_DISCLAIMER_SHORT } from '@/constants/disclaimer';
+import { EmptyState, ErrorState, LoadingState, Screen } from '@/components/ui';
 import { strings } from '@/constants/strings.vi';
+import { NormalHome } from '@/features/today/NormalHome';
+import { SickDayHome } from '@/features/today/SickDayHome';
+import { useTodayData } from '@/features/today/useTodayData';
 import { useTheme } from '@/theme';
 
-const copy = strings.placeholders.today;
+const copy = strings.today;
 
 export default function TodayScreen() {
-  const router = useRouter();
-  const { spacing } = useTheme();
+  const { sickDayMode, setSickDayMode } = useTheme();
+  // null = hồ sơ mặc định. Chọn hồ sơ chỉ giữ trong phiên (chuyển hồ sơ đầy đủ ở Milestone 5).
+  const [profileId, setProfileId] = useState<string | null>(null);
+  const { state, refreshing, refresh, retry } = useTodayData(profileId);
+
+  if (state.status === 'loading') {
+    return (
+      <Screen centered>
+        <LoadingState />
+      </Screen>
+    );
+  }
+
+  if (state.status === 'error') {
+    return (
+      <Screen centered>
+        <ErrorState message={`${copy.loadError}\n${state.message}`} onRetry={retry} />
+      </Screen>
+    );
+  }
+
+  if (sickDayMode) {
+    return (
+      <SickDayHome
+        data={state.status === 'ready' ? state.data : null}
+        onTurnOff={() => setSickDayMode(false)}
+      />
+    );
+  }
+
+  if (state.status === 'empty') {
+    return (
+      <Screen centered>
+        <EmptyState
+          icon="person-add-outline"
+          title={copy.noProfileTitle}
+          description={copy.noProfileDescription}
+        />
+      </Screen>
+    );
+  }
 
   return (
-    <Screen>
-      <EmptyState icon="today-outline" title={copy.title} description={copy.description} />
-      <View style={{ alignItems: 'center', gap: spacing.lg }}>
-        <Badge
-          tone="info"
-          icon="construct-outline"
-          label={strings.common.comingSoon(copy.milestone)}
-          style={{ alignSelf: 'center' }}
-        />
-        <Button
-          title={strings.settings.openDesignPreview}
-          icon="color-palette-outline"
-          variant="secondary"
-          onPress={() => router.push('/design-preview')}
-          style={{ alignSelf: 'center' }}
-        />
-      </View>
-      <Card>
-        <AppText variant="bodySmall" color="textSecondary">
-          {MEDICAL_DISCLAIMER_SHORT}
-        </AppText>
-      </Card>
-    </Screen>
+    <NormalHome
+      data={state.data}
+      refreshing={refreshing}
+      onRefresh={refresh}
+      onSelectProfile={setProfileId}
+      onEnableSickDay={() => setSickDayMode(true)}
+    />
   );
 }

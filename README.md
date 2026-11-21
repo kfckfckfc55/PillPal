@@ -68,6 +68,7 @@ src/
   app/                    # Route của expo-router (mỗi file = 1 màn hình)
     _layout.tsx           # Khởi động (mở DB, migration, đọc cài đặt) + Provider + Stack gốc
     (tabs)/               # 5 tab: Hôm nay · Đợt điều trị · Lịch khám · Sức khỏe · Cài đặt
+    welcome.tsx           # Màn hình chào: Medical Disclaimer + thông báo xử lý dữ liệu (bắt buộc đồng ý)
     design-preview.tsx    # Xem bộ giao diện (chỉ dùng khi phát triển)
     dev-data.tsx          # Xem / nạp lại / xóa dữ liệu (chỉ dùng khi phát triển)
   db/
@@ -76,14 +77,18 @@ src/
     repositories/         # Đọc/ghi theo từng nhóm dữ liệu (UI không viết SQL trực tiếp)
     seed.ts · reset.ts    # Dữ liệu mẫu & xóa sạch (chỉ dev)
     DatabaseProvider.tsx  # useDatabase()
-  hooks/                  # useAppBootstrap
+  hooks/                  # useAppBootstrap, useResponsive (màn hình rộng ≥ 768 → 2 cột)
   types/models.ts         # Kiểu dữ liệu domain
-  utils/                  # date.ts, id.ts
+  utils/                  # date.ts, id.ts, format.ts (giờ 24h, dd/MM/yyyy, thứ tiếng Việt)
   theme/                  # tokens.ts (màu navy), typography.ts, layout.ts, ThemeProvider, useTheme
   components/ui/          # AppText, Button, Card, Chip, Badge, RadioGroup, SwitchRow, Screen, Section,
                           # EmptyState, LoadingState, ErrorState, AppIcon
   components/             # Component ghép (PlaceholderScreen…)
-  features/               # Logic theo tính năng (settings/…)
+  features/
+    today/                # Màn hình Hôm nay (thường + Đang mệt), nhóm cữ theo khung giờ, trạng thái cữ
+    medications/stock.ts  # Ước lượng tồn kho, tiến độ liệu trình
+    onboarding/           # Đồng ý bắt buộc (ghi bảng consents), rút lại đồng ý
+    settings/
   constants/              # strings.vi.ts (chuỗi giao diện), disclaimer.ts (kèm phiên bản văn bản pháp lý)
 assets/images/            # Icon & splash nền navy (bản tạm, hoàn thiện ở Milestone 6)
 ```
@@ -139,7 +144,7 @@ Sao chép `.env.example` thành `.env` rồi điền giá trị. Chỉ biến `E
 
 - [x] **Milestone 1 · Bước 1A**: Khởi tạo dự án Expo SDK 58 + TypeScript strict + expo-router + ESLint, cấu hình `app.json` / `eas.json`, hệ thống theme navy Sáng/Tối, bộ UI component, khung 5 tab, màn hình Cài đặt có chọn giao diện.
 - [x] **Bước 1B**: SQLite với 28 bảng (sẵn chỗ cho tài khoản & gia đình: `family_links`, `remote_id`, `synced_at`), migration, repository cơ bản, dữ liệu mẫu tiếng Việt, màn hình Dữ liệu (dev), lưu theme & Sick-Day vào máy, giữ splash tới khi tải xong.
-- [ ] Bước 1C: Màn hình Hôm nay, Sick-Day Mode, màn hình chào (Medical Disclaimer + thông báo xử lý dữ liệu).
+- [x] **Bước 1C**: Màn hình chào bắt buộc đồng ý (không tick sẵn, lưu phiên bản vào `consents`, rút lại được trong Cài đặt); màn hình **Hôm nay** đọc dữ liệu thật (cữ thuốc theo khung giờ, trạng thái, tiến độ, cảnh báo buồn ngủ, sắp hết thuốc, lịch khám đếm ngược, chọn hồ sơ); **chế độ Đang mệt** (ẩn tab, chữ to, gọi người thân / 115, thông tin khẩn cấp); bố cục 2 cột trên màn hình rộng.
 - [ ] Milestone 2: Nhắc uống thuốc thông minh.
 - [ ] Milestone 2.5: Tài khoản (số điện thoại + OTP) & Gia đình (ông bà ghép máy bằng QR) với PocketBase.
 - [ ] Milestone 3 → 6: xem `docs/KEBEN_MASTER_PROMPT.md`.

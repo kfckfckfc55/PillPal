@@ -36,7 +36,7 @@ const TABS: readonly TabConfig[] = [
 ];
 
 export default function TabsLayout() {
-  const { colors, spacing, typography } = useTheme();
+  const { colors, spacing, typography, sickDayMode } = useTheme();
   const insets = useSafeAreaInsets();
 
   return (
@@ -44,12 +44,15 @@ export default function TabsLayout() {
       screenOptions={{
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSecondary,
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          height: layout.tabBarHeight + insets.bottom,
-          paddingTop: spacing.xs,
-        },
+        // Chế độ Đang mệt: ẩn thanh tab, chỉ còn màn hình tối giản (tắt bằng nút lớn trên màn hình).
+        tabBarStyle: sickDayMode
+          ? { display: 'none' }
+          : {
+              backgroundColor: colors.surface,
+              borderTopColor: colors.border,
+              height: layout.tabBarHeight + insets.bottom,
+              paddingTop: spacing.xs,
+            },
         tabBarLabelStyle: navigationTypography.tabLabel,
         headerStyle: { backgroundColor: colors.surface },
         headerTintColor: colors.textPrimary,

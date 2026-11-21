@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ScrollView, View, type StyleProp, type ViewStyle } from 'react-native';
+import { RefreshControl, ScrollView, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { layout, useTheme } from '@/theme';
@@ -12,6 +12,11 @@ export interface ScreenProps {
   safeBottom?: boolean;
   /** Căn giữa nội dung theo chiều dọc (cho trạng thái trống/lỗi/đang tải). */
   centered?: boolean;
+  /** Chiều rộng tối đa vùng nội dung (mặc định vừa để đọc; tablet 2 cột dùng `layout.wideContentMaxWidth`). */
+  maxWidth?: number;
+  /** Kéo xuống để làm mới. */
+  refreshing?: boolean;
+  onRefresh?: () => void;
   contentStyle?: StyleProp<ViewStyle>;
 }
 
@@ -21,6 +26,9 @@ export function Screen({
   scrollable = true,
   safeBottom = false,
   centered = false,
+  maxWidth = layout.contentMaxWidth,
+  refreshing = false,
+  onRefresh,
   contentStyle,
 }: ScreenProps) {
   const { colors, spacing } = useTheme();
@@ -28,7 +36,7 @@ export function Screen({
 
   const innerStyle: ViewStyle = {
     width: '100%',
-    maxWidth: layout.contentMaxWidth,
+    maxWidth,
     alignSelf: 'center',
     padding: spacing.lg,
     paddingBottom: spacing.xl + (safeBottom ? insets.bottom : 0),
@@ -50,6 +58,17 @@ export function Screen({
       style={{ flex: 1, backgroundColor: colors.background }}
       contentContainerStyle={[innerStyle, contentStyle]}
       keyboardShouldPersistTaps="handled"
+      refreshControl={
+        onRefresh ? (
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+            progressBackgroundColor={colors.surface}
+          />
+        ) : undefined
+      }
     >
       {children}
     </ScrollView>

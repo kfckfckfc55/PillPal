@@ -58,6 +58,21 @@ export function startOfLocalDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
 }
 
+/** "YYYY-MM-DD" → Date lúc 00:00 giờ địa phương. Ném lỗi nếu sai định dạng. */
+export function parseLocalDateKey(value: string): Date {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) {
+    throw new Error(`Ngày không hợp lệ: "${value}" (cần dạng YYYY-MM-DD)`);
+  }
+  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 0, 0, 0, 0);
+}
+
+/** Số ngày lịch từ `from` đến `to` (bỏ qua giờ). VD: hôm nay → ngày mai = 1. */
+export function differenceInCalendarDays(to: Date, from: Date): number {
+  const ms = startOfLocalDay(to).getTime() - startOfLocalDay(from).getTime();
+  return Math.round(ms / 86_400_000);
+}
+
 /** Thứ 7 hoặc Chủ nhật. */
 export function isWeekend(date: Date): boolean {
   const day = date.getDay();

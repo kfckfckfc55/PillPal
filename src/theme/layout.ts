@@ -27,6 +27,8 @@ export const layout = {
   tabletBreakpoint: 768,
   /** Chiều rộng tối đa của vùng đọc để nội dung không bị kéo giãn trên tablet. */
   contentMaxWidth: 720,
+  /** Chiều rộng tối đa khi tablet hiển thị 2 cột. */
+  wideContentMaxWidth: 1200,
   /** Chiều cao thanh tab (chưa gồm safe area) — mặc định 49 không đủ chỗ cho chữ tiếng Việt có dấu. */
   tabBarHeight: 60,
 } as const;

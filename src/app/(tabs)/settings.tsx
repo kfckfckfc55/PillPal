@@ -1,19 +1,53 @@
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
-import { View } from 'react-native';
+import { Alert, View } from 'react-native';
 
-import { AppIcon, AppText, Button, Card, RadioGroup, Screen, Section } from '@/components/ui';
+import {
+  AppIcon,
+  AppText,
+  Button,
+  Card,
+  RadioGroup,
+  Screen,
+  Section,
+  SwitchRow,
+} from '@/components/ui';
 import { MEDICAL_DISCLAIMER } from '@/constants/disclaimer';
 import { strings } from '@/constants/strings.vi';
+import { useConsent } from '@/features/onboarding/ConsentProvider';
 import { THEME_OPTIONS } from '@/features/settings/themeOptions';
 import { useTheme } from '@/theme';
+import { formatDateTime } from '@/utils/format';
 
 const copy = strings.settings;
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const { preference, setPreference, scheme, spacing } = useTheme();
+  const { preference, setPreference, scheme, spacing, sickDayMode, setSickDayMode } = useTheme();
+  const { acceptedAt, withdraw } = useConsent();
   const appVersion = Constants.expoConfig?.version ?? '0.0.0';
+
+  function handleSickDayChange(enabled: boolean) {
+    setSickDayMode(enabled);
+    // Khi bật: thanh tab bị ẩn → đưa người dùng về màn hình Hôm nay tối giản.
+    if (enabled) router.navigate('/');
+  }
+
+  function confirmWithdraw() {
+    Alert.alert(copy.withdrawConfirmTitle, copy.withdrawConfirmMessage, [
+      { text: strings.common.cancel, style: 'cancel' },
+      {
+        text: copy.withdrawConsent,
+        style: 'destructive',
+        onPress: () => {
+          withdraw().catch((error: unknown) => {
+            console.error('[settings] Không rút lại được sự đồng ý', error);
+            Alert.alert(strings.common.errorTitle, copy.withdrawFailed);
+          });
+        },
+      },
+    ]);
+  }
 
   return (
     <Screen>
@@ -27,6 +61,39 @@ export default function SettingsScreen() {
         <AppText variant="bodySmall" color="textSecondary" accessibilityLiveRegion="polite">
           {copy.currentlyShowing(copy.schemeLabels[scheme])}
         </AppText>
+      </Section>
+
+      <Section title={copy.sickDayTitle}>
+        <SwitchRow
+          icon="bed-outline"
+          label={copy.sickDayLabel}
+          description={copy.sickDayDescription}
+          value={sickDayMode}
+          onValueChange={handleSickDayChange}
+        />
+      </Section>
+
+      <Section title={copy.privacyTitle}>
+        <Card>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+            <AppIcon name="lock-closed-outline" color="primary" />
+            <AppText variant="label" style={{ flex: 1 }}>
+              {copy.dataStaysOnDevice}
+            </AppText>
+          </View>
+          {acceptedAt ? (
+            <AppText variant="bodySmall" color="textSecondary">
+              {copy.consentAcceptedAt(formatDateTime(acceptedAt))}
+            </AppText>
+          ) : null}
+        </Card>
+        <Button
+          title={copy.withdrawConsent}
+          icon="hand-left-outline"
+          variant="outline"
+          fullWidth
+          onPress={confirmWithdraw}
+        />
       </Section>
 
       <Section title={copy.aboutTitle}>
