@@ -30,7 +30,7 @@ Bạn là **Senior Mobile & Full-Stack Engineer** chuyên React Native (Expo), T
 4. **Giao diện Sáng / Tối:** màu chủ đạo **xanh navy**, có 3 lựa chọn **Theo hệ thống / Sáng / Tối** (chi tiết ở mục 4).
 5. **An toàn y tế:** luôn có Tuyên bố miễn trừ trách nhiệm y khoa (Medical Disclaimer) rõ ràng. App chỉ hỗ trợ ghi nhớ, chuẩn bị và quản lý thông tin cá nhân — **không chẩn đoán, không kê đơn, không gợi ý liều, không khuyên uống bù/gấp đôi liều, không kết luận tương tác thuốc**. Mọi cảnh báo dùng lời lẽ nhẹ nhàng và hướng người dùng hỏi bác sĩ/dược sĩ. Nội dung disclaimer chuẩn, dùng thống nhất trong app:
    > "PillPal chỉ là công cụ hỗ trợ ghi nhớ, chuẩn bị và quản lý thông tin sức khỏe cá nhân. Ứng dụng không thay thế chẩn đoán, kê đơn hay chỉ định của bác sĩ, dược sĩ. Khi có dấu hiệu bất thường hoặc khẩn cấp, hãy liên hệ cơ sở y tế gần nhất hoặc gọi 115."
-6. **Quyền riêng tư:** dữ liệu sức khỏe là dữ liệu nhạy cảm. Không gửi dữ liệu ra khỏi thiết bị khi người dùng chưa bật đồng bộ/chia sẻ. Không analytics, quảng cáo hay tracking. Không hardcode secret.
+6. **Quyền riêng tư & tuân thủ pháp luật Việt Nam:** dữ liệu sức khỏe là **dữ liệu cá nhân nhạy cảm** theo Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15 và Nghị định 356/2025/NĐ-CP. Không gửi dữ liệu ra khỏi thiết bị khi người dùng chưa bật đồng bộ/chia sẻ. Không analytics, quảng cáo hay tracking. Không hardcode secret. Mọi tính năng phải tuân theo mục 10 và `docs/LEGAL_COMPLIANCE_VN.md`.
 7. **Dễ tiếp cận (Accessibility):** đủ tương phản WCAG AA (chữ thường ≥ 4.5:1, chữ lớn và thành phần UI ≥ 3:1) ở cả Sáng và Tối; không truyền đạt trạng thái chỉ bằng màu (luôn kèm icon/chữ); có `accessibilityLabel`/`accessibilityRole` cho nút và icon; tôn trọng cỡ chữ hệ thống.
 
 ## 4. HỆ THỐNG MÀU & GIAO DIỆN — XANH NAVY, SÁNG/TỐI
@@ -152,7 +152,8 @@ Các bảng tối thiểu:
 | Chia sẻ | `share_grants` | người thân được chia sẻ, các quyền, trạng thái, hết hạn |
 | | `share_links` | mã / link tạm cho bác sĩ, phạm vi, hết hạn, thu hồi |
 | Hệ thống | `scheduled_notifications` | ánh xạ thông báo đã lên lịch ↔ thực thể (để hủy / lên lịch lại) |
-| | `app_settings` | key–value: theme, Sick-Day Mode, đã chấp nhận disclaimer, giờ nhắc mặc định… |
+| | `app_settings` | key–value: theme, Sick-Day Mode, giờ nhắc mặc định… |
+| | `consents` | nhật ký đồng ý: loại (Medical Disclaimer, thông báo xử lý dữ liệu, đồng bộ cloud, chia sẻ người thân, chia sẻ bác sĩ), phiên bản văn bản, thời điểm đồng ý, thời điểm rút lại |
 
 ### 5.5 Yêu cầu kỹ thuật cho thông báo
 - Xin quyền thông báo đúng lúc (khi người dùng thêm thuốc / lịch khám đầu tiên), có màn hình giải thích trước hộp thoại hệ thống, xử lý trường hợp bị từ chối (hướng dẫn mở Cài đặt máy).
@@ -223,8 +224,8 @@ Mỗi milestone được chia thành các bước nhỏ (VD: 1A, 1B, 1C). **Mỗ
 
 ### Milestone 1 — Nền móng, theme navy Sáng/Tối, schema, màn hình chính & Sick-Day
 - **1A — Khởi tạo dự án & design system:** tạo dự án Expo + TypeScript strict + expo-router + ESLint; cấu trúc thư mục mục 5.3; `app.json` / `app.config.ts` (tên PillPal, `slug`, `scheme`, bundle id / package dạng placeholder để tôi điền, `userInterfaceStyle: "automatic"`, `ios.supportsTablet: true`, icon / splash nền navy cho Sáng và Tối); `eas.json`; `.gitignore`; `.env.example`; `README.md`. Theme: tokens mục 4, `ThemeProvider`, `useTheme`, theme cho React Navigation, các UI component cơ bản; màn hình Cài đặt có bộ chọn **Theo hệ thống / Sáng / Tối** (lưu tạm trong bộ nhớ, lưu bền ở 1B).
-- **1B — SQLite:** kết nối DB, migration v1 với **toàn bộ** bảng ở mục 5.4, kiểu TypeScript tương ứng, repository cơ bản, dữ liệu mẫu tiếng Việt (2 hồ sơ, 2 đợt điều trị, 3–4 thuốc — trong đó 1 thuốc gây buồn ngủ và 1 thuốc sắp hết, 1 lịch tái khám trong 3 ngày tới, chỉ số huyết áp 7 ngày, vài triệu chứng, 1 dị ứng), hàm reset DB cho môi trường dev. Lưu cài đặt theme vào `app_settings`, giữ splash cho tới khi load xong.
-- **1C — Màn hình chính & Sick-Day:** khung 5 tab (tab chưa làm hiển thị "Sẽ có ở Milestone X"); màn hình **Hôm nay** đọc dữ liệu thật từ SQLite; **Sick-Day Mode** (bật / tắt, lưu bền, giao diện tối giản chữ to); màn hình chấp nhận Medical Disclaimer lần đầu mở app; hook `useResponsive` (breakpoint 768) và giới hạn chiều rộng nội dung trên tablet.
+- **1B — SQLite:** kết nối DB, migration v1 với **toàn bộ** bảng ở mục 5.4, kiểu TypeScript tương ứng, repository cơ bản, dữ liệu mẫu tiếng Việt (2 hồ sơ, 2 đợt điều trị, 3–4 thuốc — trong đó 1 thuốc gây buồn ngủ và 1 thuốc sắp hết, 1 lịch tái khám trong 3 ngày tới, chỉ số huyết áp 7 ngày, vài triệu chứng, 1 dị ứng), hàm reset DB cho môi trường dev. Lưu cài đặt theme vào `app_settings`, giữ splash cho tới khi load xong. Bảng `consents` theo mục 10; không cài SDK analytics/crash report nào.
+- **1C — Màn hình chính & Sick-Day:** khung 5 tab (tab chưa làm hiển thị "Sẽ có ở Milestone X"); màn hình **Hôm nay** đọc dữ liệu thật từ SQLite; **Sick-Day Mode** (bật / tắt, lưu bền, giao diện tối giản chữ to); màn hình chào lần đầu mở app gồm Medical Disclaimer + Thông báo xử lý dữ liệu cá nhân (tóm tắt: dữ liệu chỉ lưu trên máy, quyền của người dùng) — người dùng chủ động bấm đồng ý (không tick sẵn), lưu phiên bản văn bản vào `consents`; hook `useResponsive` (breakpoint 768) và giới hạn chiều rộng nội dung trên tablet.
 - **DoD M1:** `npx expo start` chạy không lỗi trên iOS & Android; `tsc` và `lint` sạch; đổi Sáng / Tối tức thì, giữ nguyên sau khi tắt mở app, không nháy trắng; Sick-Day lưu bền và mọi chữ ≥ 18px; dữ liệu mẫu hiển thị đúng; cả 4 tổ hợp theme × Sick-Day đều đọc rõ.
 
 ### Milestone 2 — Nhắc uống thuốc thông minh
@@ -240,11 +241,11 @@ Nhập chỉ số sinh tồn + biểu đồ có ngưỡng (đúng màu Sáng / T
 - **DoD M4:** biểu đồ đánh dấu đúng điểm vượt ngưỡng; ảnh / ghi âm còn nguyên sau khi khởi động lại app; iPad và tablet Android hiển thị 2 cột đúng ở cả dọc và ngang.
 
 ### Milestone 5 — Gia đình, khẩn cấp, chia sẻ & Cloud
-Đa hồ sơ gia đình + chuyển hồ sơ; Thẻ y tế khẩn cấp; đồng hành người thân có phân quyền; mã QR / link tạm thời cho bác sĩ; đồng bộ cloud (đề xuất backend + kế hoạch, **hỏi tôi chọn trước khi code**; xác thực; mock trước rồi API thật); xóa tài khoản & toàn bộ dữ liệu.
+Đa hồ sơ gia đình + chuyển hồ sơ (xác nhận quyền quản lý hồ sơ của người khác); Thẻ y tế khẩn cấp; đồng hành người thân có phân quyền; mã QR / link tạm thời cho bác sĩ; đồng bộ cloud (đề xuất backend + kế hoạch, **hỏi tôi chọn trước khi code**; ưu tiên máy chủ đặt tại Việt Nam; xác thực; mock trước rồi API thật); xóa tài khoản & toàn bộ dữ liệu. **Mọi tính năng gửi dữ liệu ra khỏi máy phải nằm sau feature flag và chỉ được bật khi "Cổng pháp lý B" (mục 10) đã hoàn tất.**
 - **DoD M5:** dữ liệu và thông báo tách đúng theo hồ sơ; app vẫn chạy đầy đủ khi offline; link chia sẻ hết hạn / thu hồi đúng; xóa dữ liệu không để sót file hay thông báo.
 
 ### Milestone 6 — Hoàn thiện & phát hành
-Privacy Policy + Medical Disclaimer bản cuối (tiếng Việt); chuỗi giải thích quyền (camera, thư viện ảnh, micro, thông báo) bằng tiếng Việt; icon / splash hoàn chỉnh; hướng dẫn điền **Data safety** (Google Play) và **App Privacy** (App Store); checklist test end-to-end trên điện thoại & tablet thật (Sáng / Tối, Sick-Day, offline, đổi múi giờ); tối ưu hiệu năng; build `.aab` / `.ipa` bằng EAS, hướng dẫn `eas submit`, quản lý version / build number.
+Privacy Policy + Điều khoản sử dụng + Medical Disclaimer bản cuối (tiếng Việt), trang web công khai về quyền riêng tư và yêu cầu xóa dữ liệu, tài khoản nhà phát triển dạng tổ chức, **luật sư rà soát trước khi nộp** (danh sách câu hỏi ở `docs/LEGAL_COMPLIANCE_VN.md`); chuỗi giải thích quyền (camera, thư viện ảnh, micro, thông báo) bằng tiếng Việt; icon / splash hoàn chỉnh; hướng dẫn điền **Data safety** (Google Play) và **App Privacy** (App Store); checklist test end-to-end trên điện thoại & tablet thật (Sáng / Tối, Sick-Day, offline, đổi múi giờ); tối ưu hiệu năng; build `.aab` / `.ipa` bằng EAS, hướng dẫn `eas submit`, quản lý version / build number.
 
 ## 9. QUY TẮC LÀM VIỆC (BẮT BUỘC TUÂN THỦ)
 1. **Định dạng mỗi câu trả lời** (cho một bước):
@@ -261,7 +262,30 @@ Privacy Policy + Medical Disclaimer bản cuối (tiếng Việt); chuỗi giả
 4. **Không phá vỡ cái đã làm:** mọi chỉnh sửa phải giữ nguyên hoạt động của các bước trước; thay đổi DB chỉ qua migration mới.
 5. **Khi tôi báo lỗi:** nêu nguyên nhân gốc (1–3 câu), đưa bản sửa đầy đủ của các file liên quan và cách kiểm tra lại. Thiếu thông tin thì hỏi log / ảnh chụp cụ thể.
 6. **Cập nhật README** sau mỗi milestone: tiến độ, cách chạy, lưu ý mới.
-7. **Không được:** đưa ra liều dùng, chẩn đoán hay lời khuyên điều trị; gửi dữ liệu sức khỏe ra ngoài thiết bị khi người dùng chưa bật; thêm analytics / quảng cáo; hardcode secret; cài thư viện ngoài danh sách khi chưa hỏi; dùng API / thư viện đã deprecated.
+7. **Không được:** đưa ra liều dùng, chẩn đoán hay lời khuyên điều trị; gửi dữ liệu sức khỏe ra ngoài thiết bị khi người dùng chưa bật; thêm analytics / quảng cáo / crash report gửi dữ liệu đi; hardcode secret; cài thư viện ngoài danh sách khi chưa hỏi; dùng API / thư viện đã deprecated; thu thập số CCCD hay dữ liệu không cần thiết; tư vấn khám từ xa, bán hoặc quảng cáo thuốc.
+8. **Kiểm tra pháp lý mỗi bước:** trong phần (g) của mỗi câu trả lời, nêu ngắn gọn bước này có tác động pháp lý gì (dữ liệu mới thu thập, quyền mới xin, dữ liệu rời khỏi máy hay không) và đã xử lý theo mục 10 thế nào.
 
-## 10. BẮT ĐẦU
-Hãy bắt đầu ngay với **Milestone 1 — Bước 1A**. Trước khi viết code, tóm tắt tối đa 10 dòng: kiến trúc tổng thể, các quyết định chính (phiên bản Expo SDK, cách tổ chức theme Sáng / Tối, cách lưu cài đặt) và các giả định bạn đặt ra. Sau đó thực hiện Bước 1A theo đúng định dạng ở mục 9 rồi dừng lại.
+## 10. PHÁP LÝ VIỆT NAM (BẮT BUỘC)
+Chi tiết, nguồn và các điểm cần luật sư xác nhận: `docs/LEGAL_COMPLIANCE_VN.md`. Tài liệu này không phải tư vấn pháp lý; khi gặp tình huống chưa rõ, dừng lại và hỏi tôi.
+
+### 10.1 Văn bản chính
+- Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15 và Nghị định 356/2025/NĐ-CP (hiệu lực 01/01/2026); xử phạt theo Nghị định 330/2026/NĐ-CP (từ 19/08/2026).
+- Luật An ninh mạng 116/2025/QH15 (từ 01/07/2026) — lưu trữ dữ liệu tại Việt Nam khi có dịch vụ trực tuyến.
+- Nghị định 98/2021/NĐ-CP về trang thiết bị y tế — app phải giữ mục đích "ghi nhớ, quản lý thông tin", không chẩn đoán/theo dõi y khoa.
+- Luật Thương mại điện tử 122/2025/QH15 và Luật Bảo vệ quyền lợi người tiêu dùng 2023 — khi thu phí.
+- Chính sách Google Play (Health apps declaration, Data safety) và Apple (5.1.1(ix): app y tế nên do pháp nhân nộp; xóa tài khoản trong app).
+
+### 10.2 Giai đoạn A — chỉ lưu trên máy (Milestone 1–4, bản phát hành đầu)
+Dữ liệu chỉ nằm trên máy người dùng; không server, không tài khoản, không SDK gửi dữ liệu ra ngoài. Người dùng tự chia sẻ qua nút Share của hệ điều hành. Vẫn bắt buộc: Medical Disclaimer, thông báo xử lý dữ liệu, giải thích trước khi xin từng quyền, xóa toàn bộ dữ liệu (xóa thật), xuất dữ liệu, tối thiểu hóa dữ liệu, nhật ký đồng ý `consents`.
+
+### 10.3 Giai đoạn B — "Cổng pháp lý B" (trước khi bật cloud, chia sẻ, QR ở Milestone 5)
+Chỉ bật khi đã có: pháp nhân + tài khoản tổ chức; hồ sơ đánh giá tác động xử lý dữ liệu (DPIA) nộp cơ quan chuyên trách; máy chủ tại Việt Nam (hoặc hồ sơ chuyển dữ liệu ra nước ngoài); đồng ý riêng cho từng mục đích, rút lại dễ dàng; quy trình báo vi phạm trong 72 giờ; mã hóa, phân quyền, nhật ký truy cập; quy trình xử lý yêu cầu truy cập/sửa/xóa/xuất; luật sư đã rà soát.
+
+### 10.4 Quy tắc sản phẩm
+- Dữ liệu của người khác (bố mẹ, vợ/chồng, con): người dùng xác nhận mình có quyền quản lý; dữ liệu trẻ em do cha mẹ/người đại diện quyết định.
+- Ghi âm lời dặn của bác sĩ: luôn nhắc xin phép trước khi ghi.
+- Ngưỡng chỉ số chỉ là tham khảo, người dùng chỉnh được; không dùng từ "chẩn đoán", "điều trị", "phát hiện bệnh".
+- Mô tả cửa hàng ghi rõ app không phải thiết bị y tế, không chẩn đoán, điều trị hay phòng bệnh.
+
+## 11. BẮT ĐẦU
+Hãy bắt đầu với **bước tiếp theo chưa hoàn thành** trong lộ trình (xem mục "Tiến độ" trong `README.md`; bước đầu tiên là **Milestone 1 — Bước 1A**). Trước khi viết code, tóm tắt tối đa 10 dòng: kiến trúc tổng thể, các quyết định chính (phiên bản Expo SDK, cách tổ chức theme Sáng / Tối, cách lưu cài đặt) và các giả định bạn đặt ra. Sau đó thực hiện Bước 1A theo đúng định dạng ở mục 9 rồi dừng lại.

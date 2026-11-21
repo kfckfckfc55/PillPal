@@ -1,0 +1,109 @@
+# Tuân thủ pháp luật Việt Nam — kế hoạch đi cùng phát triển
+
+> **Lưu ý quan trọng:** Tài liệu này tổng hợp từ các nguồn công khai (văn bản pháp luật, bản tin của công ty luật/kiểm toán, báo chí) tính đến **tháng 11/2026**. Đây **không phải tư vấn pháp lý**. Các mục đánh dấu ⚠️ là điểm nguồn chưa thống nhất hoặc chưa đối chiếu được với nguyên văn — **phải hỏi luật sư** trước khi phát hành, nhất là trước khi bật đồng bộ cloud.
+
+## 1. Kết luận chính
+
+1. **Dữ liệu sức khỏe là dữ liệu cá nhân nhạy cảm** theo Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15 (hiệu lực 01/01/2026) và Nghị định 356/2025/NĐ-CP. Đây là nhóm có yêu cầu chặt nhất.
+2. **Miễn trừ cho doanh nghiệp nhỏ/khởi nghiệp không áp dụng** với bên xử lý dữ liệu nhạy cảm, nên khi app tự thu thập dữ liệu về server sẽ phải lập hồ sơ đánh giá tác động (DPIA) như doanh nghiệp lớn.
+3. **Chiến lược an toàn nhất: phát hành bản đầu ở chế độ chỉ lưu trên máy (local-only).** Nhà phát triển không nhận, không lưu, không xem dữ liệu của người dùng. ⚠️ Cần luật sư xác nhận rằng trong mô hình này nhà phát triển không phải "bên kiểm soát/bên xử lý dữ liệu".
+4. **Đồng bộ cloud và chia sẻ cho người thân/bác sĩ (Milestone 5) chỉ được bật sau khi qua "Cổng pháp lý giai đoạn B"** (mục 4).
+5. **Không làm tính năng chẩn đoán, gợi ý liều, kiểm tra tương tác thuốc, tư vấn từ xa, bán/quảng cáo thuốc.** Các tính năng này có thể kéo app vào quy định về trang thiết bị y tế, khám chữa bệnh, dược và quảng cáo.
+6. **Nên phát hành bằng tài khoản tổ chức (pháp nhân).** Apple yêu cầu app trong lĩnh vực y tế hoặc dùng dữ liệu nhạy cảm do pháp nhân nộp (Guideline 5.1.1(ix)).
+
+## 2. Văn bản áp dụng
+
+| Văn bản | Hiệu lực | Áp dụng cho app khi nào | Nghĩa vụ chính | Độ chắc chắn |
+|---|---|---|---|---|
+| **Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15** | 01/01/2026 | Khi nhà phát triển thu thập/xử lý dữ liệu (cloud, chia sẻ, analytics, crash report) | Đồng ý rõ ràng (im lặng ≠ đồng ý); quyền của chủ thể (biết, rút đồng ý, truy cập, sửa, xóa, hạn chế, phản đối); DPIA; báo vi phạm cho cơ quan chuyên trách trong **72 giờ**; dữ liệu trẻ em do người đại diện quyết định | Cao (điều khoản chi tiết ⚠️) |
+| **Nghị định 356/2025/NĐ-CP** (thay Nghị định 13/2023) | 01/01/2026 | Như trên | Danh mục dữ liệu nhạy cảm (gồm tình trạng sức khỏe); biểu mẫu DPIA và hồ sơ chuyển dữ liệu ra nước ngoài (CTIA); cập nhật hồ sơ định kỳ/khi thay đổi ⚠️ (nguồn nêu 6 tháng và 10 ngày, chưa thống nhất) | Trung bình |
+| **Nghị định 330/2026/NĐ-CP** (xử phạt bảo vệ dữ liệu cá nhân) | 19/08/2026 | Khi vi phạm | VD: phạt 50–70 triệu đồng nếu coi im lặng là đồng ý. Mức phạt tối đa theo doanh thu ⚠️ chưa đối chiếu nguyên văn | Trung bình |
+| **Luật An ninh mạng 116/2025/QH15** | 01/07/2026 | Khi có máy chủ/dịch vụ trực tuyến | Nhà cung cấp dịch vụ trên không gian mạng phải lưu trữ dữ liệu người dùng tại Việt Nam ⚠️ chi tiết chờ nghị định hướng dẫn | Trung bình |
+| **Luật Dữ liệu (60/2024/QH15)** | 01/07/2025 | Khi có cloud | Phân loại dữ liệu; hạn chế chuyển "dữ liệu quan trọng/cốt lõi" ra nước ngoài ⚠️ chưa rõ dữ liệu sức khỏe cá nhân có thuộc nhóm này | Thấp |
+| **Nghị định 98/2021/NĐ-CP về trang thiết bị y tế** (đã sửa đổi nhiều lần) | 01/01/2022 | Nếu phần mềm có mục đích y khoa (chẩn đoán, theo dõi, điều trị…) | Phân loại A–D; loại C/D cần số lưu hành ⚠️ chưa đối chiếu định nghĩa "phần mềm" trong bản hợp nhất mới nhất | Thấp |
+| **Luật Thương mại điện tử 122/2025/QH15** + Nghị định 248/2026/NĐ-CP | 01/07/2026 | Chỉ khi app bán hàng/dịch vụ hoặc thu phí ⚠️ | Thông báo/đăng ký với Bộ Công Thương nếu thuộc diện "ứng dụng TMĐT" | Thấp |
+| **Luật Bảo vệ quyền lợi người tiêu dùng 2023** + Nghị định 55/2024/NĐ-CP | 01/07/2024 | Khi thu phí | Minh bạch giá và điều khoản; hợp đồng theo mẫu thuộc danh mục phải đăng ký | Trung bình |
+| Luật Khám bệnh, chữa bệnh; Luật Dược; Luật Quảng cáo | — | Nếu app tư vấn, khám từ xa, bán hoặc quảng cáo thuốc | Cần giấy phép/xác nhận nội dung → **PillPal không làm các tính năng này** ⚠️ chưa tra lại chi tiết | — |
+| **Google Play – Health apps policy** | Hiện hành | Mọi app | Khai báo *Health apps declaration* và *Data safety*; app không phải thiết bị y tế phải ghi rõ trong mô tả: "không phải thiết bị y tế, không chẩn đoán, điều trị hay phòng bệnh" và khuyên hỏi nhân viên y tế; có chính sách quyền riêng tư | Cao |
+| **Apple App Review Guidelines** | Hiện hành | Mọi app | 5.1.1(ix): app y tế/dữ liệu nhạy cảm nên do pháp nhân nộp; có xóa tài khoản trong app; khai báo *App Privacy* | Cao |
+
+## 3. Chiến lược "pháp lý theo thiết kế" — 2 giai đoạn
+
+### Giai đoạn A — Chỉ lưu trên máy (Milestone 1–4 và bản phát hành đầu)
+- Mọi dữ liệu nằm trong SQLite và thư mục riêng của app trên máy người dùng.
+- **Không** có máy chủ, không tài khoản, **không** SDK analytics, quảng cáo hay crash report gửi dữ liệu đi.
+- Người dùng tự chia sẻ bằng nút Share của hệ điều hành (Zalo, email…). App không tự gửi.
+- Nghĩa vụ vẫn còn: chính sách quyền riêng tư, Medical Disclaimer, giải thích từng quyền (camera, micro, thông báo), nút xóa toàn bộ dữ liệu, bảo mật dữ liệu trên máy, khai báo trên cửa hàng.
+
+### Giai đoạn B — Cloud, chia sẻ người thân, QR cho bác sĩ (Milestone 5)
+Nhà phát triển trở thành bên kiểm soát/xử lý **dữ liệu nhạy cảm**. Đây là **"Cổng pháp lý B"**: tính năng gửi dữ liệu ra khỏi máy phải nằm sau feature flag và **chỉ được bật khi mọi mục dưới đây đã xong**:
+
+- [ ] Có pháp nhân (công ty) đứng tên dịch vụ; tài khoản Apple/Google dạng tổ chức.
+- [ ] Hồ sơ đánh giá tác động xử lý dữ liệu cá nhân (DPIA) theo mẫu Nghị định 356/2025, nộp cơ quan chuyên trách (Cục A05 – Bộ Công an) đúng hạn ⚠️ xác nhận thời hạn.
+- [ ] Máy chủ đặt **tại Việt Nam** (VD: Viettel Cloud, FPT Cloud, VNG Cloud) để tránh thủ tục chuyển dữ liệu ra nước ngoài (CTIA) và đáp ứng Luật An ninh mạng 2025. Nếu dùng cloud nước ngoài → bắt buộc CTIA ⚠️.
+- [ ] Màn hình xin **đồng ý riêng** cho từng mục đích: đồng bộ, chia sẻ người thân, chia sẻ bác sĩ. Không tick sẵn; rút lại dễ như khi đồng ý; ghi nhật ký vào bảng `consents`.
+- [ ] Nhân sự/bộ phận phụ trách bảo vệ dữ liệu; quy trình xử lý yêu cầu của chủ thể dữ liệu (truy cập, sửa, xóa, xuất).
+- [ ] Quy trình phát hiện và **báo cáo vi phạm trong 72 giờ**.
+- [ ] Mã hóa khi truyền (TLS) và khi lưu; phân quyền truy cập; nhật ký truy cập; xóa thật (không chỉ xóa mềm) khi người dùng yêu cầu.
+- [ ] Hợp đồng xử lý dữ liệu với nhà cung cấp cloud.
+- [ ] Luật sư rà soát chính sách quyền riêng tư, điều khoản sử dụng và luồng đồng ý.
+
+## 4. Quy tắc bắt buộc trong sản phẩm và code (áp dụng ngay)
+
+**Dữ liệu**
+1. **Tối thiểu hóa:** không thu thập số CCCD/căn cước, không bắt buộc số thẻ BHYT. Checklist chỉ cần nhắc "mang CCCD/BHYT hoặc mở VNeID".
+2. **Không SDK gửi dữ liệu ra ngoài** (analytics, quảng cáo, crash report) khi chưa qua Cổng pháp lý B. Nếu cần crash report → phải xin đồng ý và đánh giá lại.
+3. **Bảo mật trên máy:** cân nhắc mã hóa cơ sở dữ liệu (SQLCipher qua `expo-sqlite`, ⚠️ kiểm tra hỗ trợ ở SDK 58) và khóa app bằng sinh trắc học/mã PIN (tùy chọn) cho điện thoại dùng chung trong gia đình.
+4. **Sao lưu:** quyết định rõ việc dữ liệu có nằm trong bản sao lưu iCloud/Google của người dùng hay không; luôn có chức năng **xuất dữ liệu** để người dùng tự giữ.
+5. **Thông báo:** có tùy chọn ẩn tên thuốc trên màn hình khóa.
+6. **Xóa toàn bộ dữ liệu = xóa thật:** DB, ảnh, ghi âm, thông báo đã lên lịch, cài đặt. Bản ghi xóa mềm phục vụ đồng bộ cũng phải bị dọn.
+7. **Hồ sơ người khác:** khi tạo hồ sơ cho bố mẹ/vợ chồng/con, người dùng xác nhận mình là người giám hộ, người đại diện hoặc đã được người đó đồng ý. Dữ liệu trẻ em do cha mẹ/người đại diện quyết định ⚠️ (một số trường hợp cần cả đồng ý của trẻ từ đủ 7 tuổi).
+8. **Nhật ký đồng ý:** bảng `consents` (loại đồng ý, phiên bản văn bản, thời điểm đồng ý/rút lại). Văn bản Disclaimer/Chính sách có số phiên bản; khi đổi nội dung quan trọng phải hỏi lại.
+9. **Ghi âm lời dặn của bác sĩ:** luôn nhắc "Hãy xin phép bác sĩ trước khi ghi âm" ⚠️ (quyền riêng tư của người khác). File ghi âm chỉ lưu trên máy.
+
+**Y tế**
+10. Không chẩn đoán, không gợi ý liều, không khuyên uống bù/gấp đôi, không kết luận tương tác thuốc.
+11. Ngưỡng chỉ số là "tham khảo phổ biến", người dùng chỉnh được, luôn kèm disclaimer. Không dùng từ "chẩn đoán", "điều trị", "phát hiện bệnh" trong app và mô tả cửa hàng.
+12. Không quảng cáo, gợi ý mua hay liên kết bán thuốc; không tư vấn hoặc khám từ xa.
+
+**Cửa hàng ứng dụng**
+13. Mô tả trên cửa hàng ghi rõ: *"PillPal không phải thiết bị y tế, không chẩn đoán, điều trị hay phòng ngừa bệnh. Hãy hỏi ý kiến bác sĩ, dược sĩ."*
+14. Điền đúng *Health apps declaration*, *Data safety* (Google) và *App Privacy* (Apple). Ở giai đoạn A khai báo "không thu thập dữ liệu" chỉ khi đúng là vậy.
+15. Có trang web công khai: chính sách quyền riêng tư và hướng dẫn xóa dữ liệu (Google Play yêu cầu link web).
+
+**Thu phí (nếu có)**
+16. Đăng ký kinh doanh; giá, chu kỳ gia hạn và cách hủy hiển thị rõ; rà soát Luật TMĐT 2025 và Luật BVQLNTD 2023 với luật sư.
+
+## 5. Việc pháp lý theo từng milestone
+
+| Milestone | Việc pháp lý |
+|---|---|
+| **1B** | Thêm bảng `consents`; lưu phiên bản Disclaimer/Chính sách đã chấp nhận; không cài bất kỳ SDK analytics/crash nào |
+| **1C** | Màn hình chào lần đầu: Medical Disclaimer + Thông báo xử lý dữ liệu (tóm tắt, dữ liệu chỉ lưu trên máy) → người dùng chủ động bấm đồng ý, không tick sẵn |
+| **2** | Giải thích trước khi xin quyền thông báo; tùy chọn ẩn tên thuốc |
+| **3** | Lời nhắc xin phép trước khi ghi âm; cảnh báo nhẹ khi chụp giấy tờ có thông tin người khác; xác nhận quyền quản lý hồ sơ khi tạo hồ sơ thành viên |
+| **4** | File lưu trong thư mục riêng của app; xuất PDF/ảnh kèm cảnh báo "bản này chứa thông tin sức khỏe, chỉ gửi cho người tin cậy"; chức năng xuất toàn bộ dữ liệu |
+| **5** | **Cổng pháp lý B** (mục 3) phải hoàn tất trước khi bật cloud, chia sẻ, QR; đồng ý riêng từng mục đích; xóa tài khoản và dữ liệu trên server |
+| **6** | Chính sách quyền riêng tư + Điều khoản sử dụng (tiếng Việt), trang web xóa dữ liệu, khai báo cửa hàng, tài khoản tổ chức, **luật sư rà soát toàn bộ** trước khi nộp |
+
+## 6. Câu hỏi cần hỏi luật sư
+
+1. Với mô hình chỉ lưu trên máy (không server, không analytics), nhà phát triển có phải là bên kiểm soát/xử lý dữ liệu cá nhân không? Có phải lập và nộp DPIA không?
+2. App (nhắc thuốc, ghi chỉ số, đánh dấu vượt ngưỡng tham khảo) có thuộc định nghĩa trang thiết bị y tế theo Nghị định 98/2021 bản hợp nhất mới nhất không?
+3. Khi có cloud: thời hạn nộp DPIA; Luật An ninh mạng 2025 đã bắt buộc lưu trữ dữ liệu trong nước với dịch vụ như PillPal chưa; nếu dùng cloud nước ngoài thì thủ tục CTIA ra sao?
+4. Dữ liệu sức khỏe người dùng có bị coi là "dữ liệu quan trọng" theo Luật Dữ liệu 2024 không?
+5. Thu phí qua App Store/Google Play có khiến app thành "ứng dụng thương mại điện tử" theo Luật TMĐT 2025 và Nghị định 248/2026 không?
+6. Loại hình pháp nhân phù hợp để mở tài khoản tổ chức Apple/Google (công ty TNHH một thành viên, …).
+7. Điều kiện hợp pháp khi người bệnh ghi âm lời dặn của bác sĩ.
+8. Nội dung tối thiểu bắt buộc của thông báo xử lý dữ liệu và văn bản đồng ý cho dữ liệu sức khỏe.
+
+## 7. Nguồn tham khảo
+
+- Luật 91/2025/QH15: [Thư viện Pháp luật](https://thuvienphapluat.vn/van-ban/Bo-may-hanh-chinh/Luat-Bao-ve-du-lieu-ca-nhan-2025-so-91-2025-QH15-625628.aspx) · [Công báo](https://congbaocdn.chinhphu.vn/CongBaoCP/VanBan/2025/6/45578/57730-1-2025971-97291-2025-qh15.pdf) · [VnEconomy – điểm mới](https://vneconomy.vn/nhung-diem-moi-trong-luat-bao-ve-du-lieu-ca-nhan-tu-112026.htm) · [dpo.vn – toàn cảnh](https://dpo.vn/luat-bao-ve-du-lieu-ca-nhan/) · [Cần Thơ – dữ liệu trẻ em](https://pbgdpl.cantho.gov.vn/quy-dinh-ve-bao-ve-du-lieu-ca-nhan-cua-tre-em-nguoi-bi-mat-hoac-han-che-nang-luc-hanh-vi-dan-su-nguoi-co-kho-khan-trong-nhan-thuc-lam-chu-hanh-vi)
+- Nghị định 356/2025/NĐ-CP: [Thư viện Pháp luật](https://thuvienphapluat.vn/van-ban/Quyen-dan-su/Nghi-dinh-356-2025-ND-CP-huong-dan-Luat-Bao-ve-du-lieu-ca-nhan-687428.aspx) · [EY](https://www.ey.com/vi_vn/technical/tax/tax-and-law-updates/nghi-dinh-so-356-2025-nd-cp-quy-dinh-chi-tiet-mot-so-dieu-va-bien-phap-thi-hanh-luat-bao-ve-du-lieu-ca-nhan) · [PwC](https://www.pwc.com/vn/vn/publications/2026/20260128-new-rules-personal-data-protection.pdf) · [Luật Việt An – so với NĐ 13](https://luatvietan.vn/diem-moi-cua-nghi-dinh-356-2025-so-voi-nghi-dinh-13-2023-ve-huong-dan-bao-ve-du-lieu-ca-nhan.html)
+- Nghị định 330/2026/NĐ-CP (xử phạt): [PwC](https://www.pwc.com/vn/vn/publications/news-brief/260915-decree-330-pdpl-violations.html) · [VOV](https://vov.vn/chinh-tri/tu-1982026-tu-y-thu-thap-xu-ly-du-lieu-ca-nhan-bi-phat-toi-70-trieu-dong-post1326424.vov) · [EY](https://www.ey.com/content/dam/ey-unified-site/ey-com/vi-vn/technical/tax/documents/ey-vn-decree-330-providing-sanctions-for-personal-data-protection.pdf)
+- Luật An ninh mạng 2025: [EY](https://www.ey.com/vi_vn/technical/tax/tax-and-law-updates/luat-an-ninh-mang-2025-cua-viet-nam-cac-diem-chinh-va-yeu-cau-tuan-thu) · [Thư viện Pháp luật](https://thuvienphapluat.vn/van-ban/cong-nghe-thong-tin/Luat-An-ninh-mang-2025-so-116-2025-QH15-666020.aspx)
+- Trang thiết bị y tế: [Nghị định 98/2021 (LuatVietnam)](https://luatvietnam.vn/y-te/nghi-dinh-98-2021-nd-cp-quan-ly-trang-thiet-bi-y-te-212320-d1.html) · [Tài liệu Sở Y tế Hà Tĩnh](https://soyte.hatinh.gov.vn/upload/1000030/20220406/FILE_20220329_072158_Tai_lieu_So_Y_te_57771add8a.pdf)
+- Luật Thương mại điện tử 2025: [Thư viện Pháp luật](https://thuvienphapluat.vn/van-ban/Thuong-mai/Luat-Thuong-mai-dien-tu-2025-so-122-2025-QH15-662035.aspx) · [Bộ Công Thương – NĐ 248/2026](https://moit.gov.vn/tin-tuc/bo-cong-thuong-pho-bien-luat-thuong-mai-dien-tu-va-nghi-dinh-so-248-2026-nd-cp.html)
+- Bảo vệ người tiêu dùng: [Bộ Công Thương – NĐ 55/2024](https://moit.gov.vn/tin-tuc/bao-chi-voi-nguoi-dan/nhung-diem-moi-cua-nghi-dinh-so-55-2024-nd-cp-quy-dinh-chi-tiet-mot-so-dieu-cua-luat-bao-ve-quyen-loi-nguoi-tieu-dung-20.html)
+- Cửa hàng ứng dụng: [Google Play – Health apps](https://support.google.com/googleplay/android-developer/answer/13996367) · [Apple App Review Guidelines](https://developer.apple.com/appstore/resources/approval/guidelines.html) · [Apple Forums – 5.1.1(ix)](https://developer.apple.com/forums/thread/750018)
