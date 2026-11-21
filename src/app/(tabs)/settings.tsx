@@ -55,7 +55,15 @@ export default function SettingsScreen() {
             title={copy.openDesignPreview}
             icon="color-palette-outline"
             variant="outline"
+            fullWidth
             onPress={() => router.push('/design-preview')}
+          />
+          <Button
+            title={copy.openDevData}
+            icon="server-outline"
+            variant="outline"
+            fullWidth
+            onPress={() => router.push('/dev-data')}
           />
         </Section>
       ) : null}

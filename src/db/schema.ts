@@ -1,0 +1,33 @@
+/** Tên tất cả bảng trong schema hiện tại (dùng cho màn hình dev và kiểm thử). */
+export const TABLE_NAMES = [
+  'profiles',
+  'allergies',
+  'conditions',
+  'emergency_contacts',
+  'routine_anchors',
+  'care_journeys',
+  'documents',
+  'prescriptions',
+  'medications',
+  'prescription_items',
+  'medication_schedules',
+  'medication_pauses',
+  'dose_events',
+  'side_effect_logs',
+  'appointments',
+  'checklist_items',
+  'doctor_questions',
+  'visit_notes',
+  'symptom_logs',
+  'vital_readings',
+  'vital_thresholds',
+  'audio_notes',
+  'expenses',
+  'family_links',
+  'share_links',
+  'scheduled_notifications',
+  'app_settings',
+  'consents',
+] as const;
+
+export type TableName = (typeof TABLE_NAMES)[number];

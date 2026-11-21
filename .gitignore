@@ -40,3 +40,8 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# PocketBase (Milestone 2.5) — dữ liệu & file chạy, không commit
+server/pb_data/
+server/pocketbase
+server/pocketbase.exe

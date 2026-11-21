@@ -15,6 +15,8 @@ Kế hoạch tuân thủ pháp luật Việt Nam (dữ liệu cá nhân, y tế,
 | Ngôn ngữ | TypeScript (strict) |
 | Điều hướng | `expo-router` (route trong `src/app/`) |
 | Giao diện | Theme navy tự xây, Sáng / Tối / Theo hệ thống, icon `@expo/vector-icons` |
+| Dữ liệu trên máy | `expo-sqlite` (offline-first, migration theo `PRAGMA user_version`) |
+| Máy chủ gia đình | PocketBase tự host — từ Milestone 2.5, khi phát triển chạy trên máy tính cá nhân |
 | Build | EAS Build (`eas.json`) |
 
 ## Yêu cầu
@@ -54,17 +56,34 @@ Cài thư viện mới **luôn** dùng `npx expo install <tên-gói>` để có 
 ```
 src/
   app/                    # Route của expo-router (mỗi file = 1 màn hình)
-    _layout.tsx           # Provider theme + Stack gốc
+    _layout.tsx           # Khởi động (mở DB, migration, đọc cài đặt) + Provider + Stack gốc
     (tabs)/               # 5 tab: Hôm nay · Đợt điều trị · Lịch khám · Sức khỏe · Cài đặt
-    design-preview.tsx    # Màn hình xem bộ giao diện (chỉ dùng khi phát triển)
+    design-preview.tsx    # Xem bộ giao diện (chỉ dùng khi phát triển)
+    dev-data.tsx          # Xem / nạp lại / xóa dữ liệu (chỉ dùng khi phát triển)
+  db/
+    client.ts             # Mở SQLite, bật WAL + khóa ngoại
+    migrations/           # 001_initial.ts (28 bảng), index.ts (chạy migration)
+    repositories/         # Đọc/ghi theo từng nhóm dữ liệu (UI không viết SQL trực tiếp)
+    seed.ts · reset.ts    # Dữ liệu mẫu & xóa sạch (chỉ dev)
+    DatabaseProvider.tsx  # useDatabase()
+  hooks/                  # useAppBootstrap
+  types/models.ts         # Kiểu dữ liệu domain
+  utils/                  # date.ts, id.ts
   theme/                  # tokens.ts (màu navy), typography.ts, layout.ts, ThemeProvider, useTheme
   components/ui/          # AppText, Button, Card, Chip, Badge, RadioGroup, SwitchRow, Screen, Section,
                           # EmptyState, LoadingState, ErrorState, AppIcon
   components/             # Component ghép (PlaceholderScreen…)
   features/               # Logic theo tính năng (settings/…)
-  constants/              # strings.vi.ts (chuỗi giao diện), disclaimer.ts
+  constants/              # strings.vi.ts (chuỗi giao diện), disclaimer.ts (kèm phiên bản văn bản pháp lý)
 assets/images/            # Icon & splash nền navy (bản tạm, hoàn thiện ở Milestone 6)
 ```
+
+## Cơ sở dữ liệu trên máy
+
+- File `pillpal.db` (SQLite) nằm trong bộ nhớ riêng của app. Khi mở app: mở DB → chạy migration còn thiếu → **(chỉ khi phát triển) tự nạp dữ liệu mẫu nếu DB trống** → đọc cài đặt theme rồi mới tắt splash.
+- Thay đổi schema: **thêm file migration mới** trong `src/db/migrations/` và khai báo vào `MIGRATIONS`. Không sửa migration đã phát hành.
+- Màn hình **Cài đặt → Dành cho nhà phát triển → Dữ liệu (dev)**: xem số bản ghi từng bảng, nạp lại dữ liệu mẫu, xóa sạch.
+- Dữ liệu mẫu (2 hồ sơ, 4 thuốc, cữ thuốc 3 ngày qua + hôm nay, lịch tái khám sau 3 ngày, huyết áp 7 ngày…) là **giả**, tên thuốc chỉ để minh họa giao diện.
 
 ## Theme navy & chế độ Sáng/Tối
 
@@ -109,6 +128,8 @@ Sao chép `.env.example` thành `.env` rồi điền giá trị. Chỉ biến `E
 ## Tiến độ
 
 - [x] **Milestone 1 · Bước 1A**: Khởi tạo dự án Expo SDK 58 + TypeScript strict + expo-router + ESLint, cấu hình `app.json` / `eas.json`, hệ thống theme navy Sáng/Tối, bộ UI component, khung 5 tab, màn hình Cài đặt có chọn giao diện.
-- [ ] Bước 1B: SQLite (schema đầy đủ, migration, dữ liệu mẫu), lưu cài đặt theme.
-- [ ] Bước 1C: Màn hình Hôm nay, Sick-Day Mode, chấp nhận Medical Disclaimer lần đầu.
-- [ ] Milestone 2 → 6: xem `docs/PILLPAL_MASTER_PROMPT.md`.
+- [x] **Bước 1B**: SQLite với 28 bảng (sẵn chỗ cho tài khoản & gia đình: `family_links`, `remote_id`, `synced_at`), migration, repository cơ bản, dữ liệu mẫu tiếng Việt, màn hình Dữ liệu (dev), lưu theme & Sick-Day vào máy, giữ splash tới khi tải xong.
+- [ ] Bước 1C: Màn hình Hôm nay, Sick-Day Mode, màn hình chào (Medical Disclaimer + thông báo xử lý dữ liệu).
+- [ ] Milestone 2: Nhắc uống thuốc thông minh.
+- [ ] Milestone 2.5: Tài khoản (số điện thoại + OTP) & Gia đình (ông bà ghép máy bằng QR) với PocketBase.
+- [ ] Milestone 3 → 6: xem `docs/PILLPAL_MASTER_PROMPT.md`.

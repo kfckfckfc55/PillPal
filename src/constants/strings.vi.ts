@@ -11,6 +11,35 @@ export const strings = {
     errorTitle: 'Đã có lỗi xảy ra',
     errorMessage: 'Vui lòng thử lại. Nếu lỗi lặp lại, hãy khởi động lại ứng dụng.',
     comingSoon: (milestone: string) => `Sẽ có ở ${milestone}`,
+    cancel: 'Hủy',
+  },
+
+  bootstrap: {
+    errorTitle: 'Không mở được dữ liệu trên máy',
+    errorMessage: (detail: string) =>
+      `Ứng dụng chưa đọc được dữ liệu đã lưu. Hãy thử lại; nếu vẫn lỗi, khởi động lại máy.\n\nChi tiết: ${detail}`,
+  },
+
+  devData: {
+    screenTitle: 'Dữ liệu (dev)',
+    intro: 'Chỉ dùng khi phát triển: xem số bản ghi từng bảng, nạp lại dữ liệu mẫu hoặc xóa sạch.',
+    actionsTitle: 'Thao tác',
+    reseed: 'Nạp lại dữ liệu mẫu',
+    wipe: 'Xóa sạch dữ liệu',
+    confirmReseedTitle: 'Nạp lại dữ liệu mẫu?',
+    confirmReseedMessage:
+      'Toàn bộ dữ liệu hiện có (kể cả cài đặt giao diện) sẽ bị xóa và thay bằng dữ liệu mẫu.',
+    confirmWipeTitle: 'Xóa sạch dữ liệu?',
+    confirmWipeMessage:
+      'Toàn bộ dữ liệu hiện có (kể cả cài đặt giao diện) sẽ bị xóa. Lần mở app sau sẽ tự nạp lại dữ liệu mẫu.',
+    doneTitle: 'Đã xong',
+    reseedDone: 'Đã nạp lại dữ liệu mẫu.',
+    wipeDone: 'Đã xóa sạch dữ liệu.',
+    failedTitle: 'Thao tác thất bại',
+    tablesTitle: 'Các bảng',
+    schemaVersion: (version: number) => `Phiên bản cơ sở dữ liệu: ${version}`,
+    totalRecords: (total: number) => `Tổng số bản ghi: ${total}`,
+    devOnly: 'Màn hình này chỉ dùng trong môi trường phát triển.',
   },
 
   tabs: {
@@ -60,6 +89,7 @@ export const strings = {
     disclaimerTitle: 'Miễn trừ trách nhiệm y khoa',
     developerTitle: 'Dành cho nhà phát triển',
     openDesignPreview: 'Xem bộ giao diện mẫu',
+    openDevData: 'Dữ liệu (dev)',
   },
 
   designPreview: {
