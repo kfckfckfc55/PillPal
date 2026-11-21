@@ -74,11 +74,12 @@ src/
     welcome.tsx           # Màn hình chào: Medical Disclaimer + thông báo xử lý dữ liệu (bắt buộc đồng ý)
     medications/          # Danh sách thuốc · Thêm thuốc (new) · Sửa thuốc ([id])
     routine.tsx           # Giờ sinh hoạt theo loại ngày, lịch trong tuần, đổi riêng hôm nay / ngày mai
+    history.tsx           # Lịch sử uống thuốc 7 ngày
     design-preview.tsx    # Xem bộ giao diện (chỉ dùng khi phát triển)
     dev-data.tsx          # Xem / nạp lại / xóa dữ liệu (chỉ dùng khi phát triển)
   db/
     client.ts             # Mở SQLite, bật WAL + khóa ngoại
-    migrations/           # 001_initial.ts (28 bảng), 002 (loại ngày + "ô" của cữ thuốc), index.ts
+    migrations/           # 001_initial.ts (28 bảng), 002 (loại ngày + "ô" của cữ thuốc), 003 (số viên đã trừ), index.ts
     repositories/         # Đọc/ghi theo từng nhóm dữ liệu (UI không viết SQL trực tiếp)
     seed.ts · reset.ts    # Dữ liệu mẫu & xóa sạch (chỉ dev)
     DatabaseProvider.tsx  # useDatabase()
@@ -87,12 +88,16 @@ src/
   utils/                  # date.ts, id.ts, format.ts (giờ 24h, dd/MM/yyyy, thứ tiếng Việt)
   theme/                  # tokens.ts (màu navy), typography.ts, layout.ts, ThemeProvider, useTheme
   components/ui/          # AppText, Button, Card, Chip, ChipGroup, Badge, RadioGroup, SwitchRow, Screen, Section,
-                          # EmptyState, LoadingState, ErrorState, AppIcon, TextField, NumberField, TimeField, DateField
+                          # EmptyState, LoadingState, ErrorState, AppIcon, TextField, NumberField, TimeField, DateField,
+                          # BottomSheet
   components/             # Component ghép (PlaceholderScreen…)
   features/
-    today/                # Màn hình Hôm nay (thường + Đang mệt), nhóm cữ theo khung giờ, trạng thái cữ
-    medications/          # scheduling.ts (tính giờ cữ), doseSync.ts (đồng bộ cữ), medicationForm.ts, stock.ts,
-                          # allergyCheck.ts, scheduleText.ts, components/ (form, danh sách) + __tests__/
+    today/                # Màn hình Hôm nay (thường + Đang mệt), nhóm cữ theo khung giờ, trạng thái cữ,
+                          # useDoseActions (Đã uống / Nhắc lại / Uống lúc khác / Bỏ qua / Hoàn tác), phản ứng sau uống
+    medications/          # scheduling.ts (tính giờ cữ), doseSync.ts (đồng bộ cữ), doseActions.ts (quy tắc đã uống /
+                          # trễ / nhắc lại / đếm viên), pauses.ts (tạm dừng), medicationForm.ts, stock.ts,
+                          # allergyCheck.ts, scheduleText.ts, components/ (form, danh sách, tạm dừng) + __tests__/
+    history/              # Gom cữ 7 ngày theo ngày + đếm theo trạng thái
     routine/              # Kiểm tra giờ sinh hoạt
     profiles/             # Tạo hồ sơ đầu tiên, lấy hồ sơ theo route
     onboarding/           # Đồng ý bắt buộc (ghi bảng consents), rút lại đồng ý
@@ -109,6 +114,7 @@ assets/images/            # Icon & splash nền navy (bản tạm, hoàn thiện
 - Dữ liệu mẫu (2 hồ sơ, 4 thuốc, cữ thuốc 3 ngày qua + hôm nay, lịch tái khám sau 3 ngày, huyết áp 7 ngày…) là **giả**, tên thuốc chỉ để minh họa giao diện.
 - **Cữ thuốc (`dose_events`)** được sinh tự động cho hôm nay + 2 ngày tới mỗi khi mở màn hình Hôm nay và sau mỗi lần sửa thuốc / giờ sinh hoạt. Mỗi cữ có một "ô" (`slot_key` = ngày + thứ tự): đổi giờ thì cữ chưa uống được dời, cữ đã uống / bỏ qua giữ nguyên và **không sinh thêm cữ trong cùng ngày** (tránh nhắc uống trùng liều). Thêm thuốc lúc 10:00 thì không hiện cữ 08:00 sáng hôm đó.
 - Bản cài mới (không có dữ liệu mẫu): màn hình Hôm nay hỏi **tên gọi** để tạo hồ sơ đầu tiên.
+- **Trạng thái cữ:** `pending` (chưa xác nhận) · `snoozed` (nhắc lại) · `taken` / `taken_late` (uống trễ > 60 phút) · `skipped` (bỏ qua, có lý do) · `paused` (trong thời gian tạm dừng — không nhắc, không tính là quên) · `missed` (qua ngày mới vẫn chưa xác nhận). "Đã uống" trừ một liều khỏi số lượng còn (không âm) và ghi `stock_deducted`; **Hoàn tác** cộng trả đúng số đó và xóa phản ứng đã ghi cho cữ.
 
 ## Theme navy & chế độ Sáng/Tối
 
@@ -157,7 +163,7 @@ Sao chép `.env.example` thành `.env` rồi điền giá trị. Chỉ biến `E
 - [x] **Bước 1C**: Màn hình chào bắt buộc đồng ý (không tick sẵn, lưu phiên bản vào `consents`, rút lại được trong Cài đặt); màn hình **Hôm nay** đọc dữ liệu thật (cữ thuốc theo khung giờ, trạng thái, tiến độ, cảnh báo buồn ngủ, sắp hết thuốc, lịch khám đếm ngược, chọn hồ sơ); **chế độ Đang mệt** (ẩn tab, chữ to, gọi người thân / 115, thông tin khẩn cấp); bố cục 2 cột trên màn hình rộng.
 - [ ] **Milestone 2**: Nhắc uống thuốc thông minh.
   - [x] **Bước 2A**: Thêm / sửa / ngừng / xóa thuốc; giờ uống theo bữa ăn & giấc ngủ, giờ cố định hoặc cách đều; ngày trong tuần, liệu trình, số lượng, lưu ý buồn ngủ / chóng mặt, nhắc trùng dị ứng; **Giờ sinh hoạt** theo ngày làm / ngày nghỉ / làm ca + lịch tuần + đổi riêng hôm nay; tự sinh cữ cho 3 ngày; tạo hồ sơ đầu tiên; unit test (`jest-expo`).
-  - [ ] Bước 2B: Đã uống / Nhắc lại / Uống trễ lúc… / Bỏ qua / Hoàn tác, trừ số viên, tác dụng phụ, tạm dừng có lý do, lịch sử 7 ngày.
+  - [x] **Bước 2B**: Đã uống / Nhắc lại 10–15 phút / Đã uống lúc khác… / Bỏ qua (kèm lý do) / Hoàn tác ngay trên màn hình Hôm nay (và nút lớn ở chế độ Đang mệt); trừ & trả số viên; ghi phản ứng sau uống kèm lưu ý an toàn; cữ trễ ≥ 2 giờ nhắc "hỏi bác sĩ / dược sĩ" (không khuyên uống bù); tạm dừng có lý do + tự dùng lại; cữ ngày cũ chưa xác nhận → "Đã quên"; Lịch sử 7 ngày.
   - [ ] Bước 2C: Thông báo nhắc thuốc (quyền, kênh Android, nút trên thông báo, lên lịch cuốn chiếu), đổi múi giờ.
 - [ ] Milestone 2.5: Tài khoản (số điện thoại + OTP) & Gia đình (ông bà ghép máy bằng QR) với PocketBase.
 - [ ] Milestone 3 → 6: xem `docs/KEBEN_MASTER_PROMPT.md`.

@@ -14,8 +14,10 @@ import {
   listEmergencyContacts,
 } from '@/db/repositories/healthProfileRepository';
 import { listActiveMedications, listSchedulesForProfile } from '@/db/repositories/medicationRepository';
+import { listOpenPausesForProfile } from '@/db/repositories/pauseRepository';
 import { listProfiles } from '@/db/repositories/profileRepository';
 import { loadRoutineConfig } from '@/db/repositories/routineRepository';
+import { listSideEffectsForDoses } from '@/db/repositories/sideEffectRepository';
 import { syncDoseEvents } from '@/features/medications/doseSyncService';
 import { resolveDayType } from '@/features/medications/scheduling';
 import type {
@@ -25,8 +27,10 @@ import type {
   DayType,
   EmergencyContact,
   Medication,
+  MedicationPause,
   MedicationSchedule,
   Profile,
+  SideEffectLog,
 } from '@/types/models';
 import { addDays, startOfLocalDay } from '@/utils/date';
 
@@ -43,6 +47,10 @@ export interface TodayData {
   allergies: Allergy[];
   conditions: Condition[];
   contacts: EmergencyContact[];
+  /** Phản ứng sau uống đã ghi cho các cữ hôm nay. */
+  sideEffects: SideEffectLog[];
+  /** Tạm dừng đang / sắp diễn ra của các thuốc thuộc hồ sơ. */
+  openPauses: MedicationPause[];
 }
 
 export type TodayState =
@@ -72,7 +80,7 @@ export async function loadTodayData(
   const dayStart = startOfLocalDay(now);
   const dayEnd = addDays(dayStart, 1);
 
-  const [doses, medications, schedules, nextAppointment, allergies, conditions, contacts, routine] =
+  const [doses, medications, schedules, nextAppointment, allergies, conditions, contacts, routine, openPauses] =
     await Promise.all([
       listDoseEventsBetween(db, profile.id, dayStart.toISOString(), dayEnd.toISOString()),
       listActiveMedications(db, profile.id),
@@ -82,7 +90,12 @@ export async function loadTodayData(
       listConditions(db, profile.id),
       listEmergencyContacts(db, profile.id),
       loadRoutineConfig(db, profile.id),
+      listOpenPausesForProfile(db, profile.id, now.toISOString()),
     ]);
+  const sideEffects = await listSideEffectsForDoses(
+    db,
+    doses.map((dose) => dose.id),
+  );
 
   return {
     now,
@@ -96,6 +109,8 @@ export async function loadTodayData(
     allergies,
     conditions,
     contacts,
+    sideEffects,
+    openPauses,
   };
 }
 
@@ -135,11 +150,16 @@ export function useTodayData(profileId: string | null) {
     runLoad();
   }, [runLoad]);
 
+  /** Tải lại âm thầm sau một thao tác (không hiện vòng xoay). */
+  const reload = useCallback(() => {
+    runLoad();
+  }, [runLoad]);
+
   /** Thử lại sau lỗi (hiện trạng thái đang tải). */
   const retry = useCallback(() => {
     setState({ status: 'loading' });
     runLoad();
   }, [runLoad]);
 
-  return { state, refreshing, refresh, retry };
+  return { state, refreshing, refresh, reload, retry };
 }

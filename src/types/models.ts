@@ -234,6 +234,8 @@ export interface DoseEvent extends Timestamps, SyncFields {
   snoozeUntil: string | null;
   skipReason: string | null;
   note: string | null;
+  /** Số lượng đã trừ khỏi tồn kho khi ghi "Đã uống" (để hoàn tác trả lại đúng). */
+  stockDeducted: number | null;
 }
 
 export type SideEffectTag = 'normal' | 'drowsy' | 'gi_upset' | 'dizzy' | 'other';

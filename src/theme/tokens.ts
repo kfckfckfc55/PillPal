@@ -43,6 +43,8 @@ export interface ColorTokens {
   info: string;
   /** Chữ/icon trên nền success/warning/danger/info đặc. */
   onStatus: string;
+  /** Lớp phủ tối phía sau bảng thao tác / hộp thoại (có độ trong suốt). */
+  scrim: string;
 }
 
 /** Thang màu navy gốc — dùng cho cấu hình native (splash, icon) và tham chiếu. */
@@ -74,6 +76,7 @@ const light: ColorTokens = {
   danger: '#C53030',
   info: '#2B6CB0',
   onStatus: '#FFFFFF',
+  scrim: 'rgba(15, 37, 71, 0.5)',
 };
 
 const dark: ColorTokens = {
@@ -92,6 +95,7 @@ const dark: ColorTokens = {
   danger: '#FF7B7B',
   info: '#7CB8FF',
   onStatus: '#0A1426',
+  scrim: 'rgba(0, 0, 0, 0.6)',
 };
 
 export const colorTokens: Record<ColorSchemeName, ColorTokens> = { light, dark };

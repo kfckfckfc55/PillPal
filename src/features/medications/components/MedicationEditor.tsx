@@ -26,6 +26,7 @@ import {
 import type { MedicationEditorData } from '../useMedicationEditorData';
 
 import { MedicationForm } from './MedicationForm';
+import { PauseSection } from './PauseSection';
 
 const copy = strings.medications;
 
@@ -135,6 +136,8 @@ export function MedicationEditor({ data }: { data: MedicationEditorData }) {
       ) : null}
 
       <Button title={copy.save} icon="checkmark-circle-outline" fullWidth loading={busy} onPress={handleSave} />
+
+      {data.medication?.isActive ? <PauseSection medication={data.medication} /> : null}
 
       {data.medication ? (
         <View style={{ gap: spacing.sm }}>

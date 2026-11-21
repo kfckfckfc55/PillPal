@@ -3,12 +3,14 @@ import { Alert, Linking, View } from 'react-native';
 import { AppText, Badge, Button, Card, Screen, Section } from '@/components/ui';
 import { MEDICAL_DISCLAIMER_SHORT } from '@/constants/disclaimer';
 import { strings } from '@/constants/strings.vi';
+import { canActOnDose } from '@/features/medications/doseActions';
 import { getCourseProgress } from '@/features/medications/stock';
 import { useTheme } from '@/theme';
 import { formatTime, formatWeekdayDate } from '@/utils/format';
 
 import { DoseSafetyNotes, doseMeta, doseTitle } from './components/DoseRow';
 import { describeDoseStatus, getNextDose } from './doseDisplay';
+import type { DoseActionController } from './useDoseActions';
 import type { TodayData } from './useTodayData';
 
 const copy = strings.sickDay;
@@ -26,13 +28,17 @@ export interface SickDayHomeProps {
   /** null khi chưa có hồ sơ nào — vẫn hiện nút gọi cấp cứu và nút tắt chế độ. */
   data: TodayData | null;
   onTurnOff: () => void;
+  actions: DoseActionController;
 }
+
+/** Nhắc lại trong chế độ Đang mệt: một lựa chọn duy nhất cho đơn giản. */
+const SICK_DAY_SNOOZE_MINUTES = 15;
 
 /**
  * Chế độ Đang mệt: chữ to, nút lớn, chỉ giữ việc cần thiết —
  * cữ thuốc tiếp theo, gọi người thân / cấp cứu, thông tin khẩn cấp, nút tắt chế độ.
  */
-export function SickDayHome({ data, onTurnOff }: SickDayHomeProps) {
+export function SickDayHome({ data, onTurnOff, actions }: SickDayHomeProps) {
   const { spacing } = useTheme();
   const now = data?.now ?? new Date();
   const nextDose = data ? getNextDose(data.doses) : null;
@@ -67,9 +73,27 @@ export function SickDayHome({ data, onTurnOff }: SickDayHomeProps) {
         ) : (
           <AppText>{copy.noNextDose}</AppText>
         )}
-        <AppText variant="bodySmall" color="textSecondary">
-          {strings.today.actionsComingSoon}
-        </AppText>
+        {nextDose && canActOnDose(nextDose, now) ? (
+          <View style={{ gap: spacing.sm }}>
+            <Button
+              title={strings.doseActions.take}
+              icon="checkmark-circle"
+              fullWidth
+              loading={actions.busyId === nextDose.id}
+              disabled={actions.busyId !== null}
+              accessibilityLabel={strings.doseActions.takeFor(doseTitle(nextDose), formatTime(nextDose.scheduledAt))}
+              onPress={() => actions.takeNow(nextDose)}
+            />
+            <Button
+              title={strings.doseActions.snooze(SICK_DAY_SNOOZE_MINUTES)}
+              icon="alarm-outline"
+              variant="secondary"
+              fullWidth
+              disabled={actions.busyId !== null}
+              onPress={() => actions.snooze(nextDose, SICK_DAY_SNOOZE_MINUTES)}
+            />
+          </View>
+        ) : null}
       </Card>
 
       <Section title={copy.callFamilyTitle}>

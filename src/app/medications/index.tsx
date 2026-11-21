@@ -68,6 +68,7 @@ export default function MedicationListScreen() {
           key={medication.id}
           medication={medication}
           schedules={schedulesOf(medication)}
+          pause={state.pauses.find((pause) => pause.medicationId === medication.id) ?? null}
           today={today}
           onPress={() => openEdit(medication)}
         />

@@ -5,6 +5,7 @@ import { strings } from '@/constants/strings.vi';
 import { CreateProfileCard } from '@/features/profiles/CreateProfileCard';
 import { NormalHome } from '@/features/today/NormalHome';
 import { SickDayHome } from '@/features/today/SickDayHome';
+import { useDoseActions } from '@/features/today/useDoseActions';
 import { useTodayData } from '@/features/today/useTodayData';
 import { useTheme } from '@/theme';
 
@@ -14,7 +15,8 @@ export default function TodayScreen() {
   const { sickDayMode, setSickDayMode } = useTheme();
   // null = hồ sơ mặc định. Chọn hồ sơ chỉ giữ trong phiên (chuyển hồ sơ đầy đủ ở Milestone 5).
   const [profileId, setProfileId] = useState<string | null>(null);
-  const { state, refreshing, refresh, retry } = useTodayData(profileId);
+  const { state, refreshing, refresh, reload, retry } = useTodayData(profileId);
+  const actions = useDoseActions(reload);
 
   if (state.status === 'loading') {
     return (
@@ -34,10 +36,14 @@ export default function TodayScreen() {
 
   if (sickDayMode) {
     return (
-      <SickDayHome
-        data={state.status === 'ready' ? state.data : null}
-        onTurnOff={() => setSickDayMode(false)}
-      />
+      <>
+        <SickDayHome
+          data={state.status === 'ready' ? state.data : null}
+          onTurnOff={() => setSickDayMode(false)}
+          actions={actions}
+        />
+        {actions.sheet}
+      </>
     );
   }
 
@@ -51,12 +57,16 @@ export default function TodayScreen() {
   }
 
   return (
-    <NormalHome
-      data={state.data}
-      refreshing={refreshing}
-      onRefresh={refresh}
-      onSelectProfile={setProfileId}
-      onEnableSickDay={() => setSickDayMode(true)}
-    />
+    <>
+      <NormalHome
+        data={state.data}
+        refreshing={refreshing}
+        onRefresh={refresh}
+        onSelectProfile={setProfileId}
+        onEnableSickDay={() => setSickDayMode(true)}
+        actions={actions}
+      />
+      {actions.sheet}
+    </>
   );
 }

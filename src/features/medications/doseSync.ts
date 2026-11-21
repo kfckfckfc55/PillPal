@@ -17,8 +17,16 @@ import type { DoseOccurrence } from './scheduling';
 /** Số ngày sinh cữ trước (hôm nay + 2 ngày tới) — đủ để lên lịch thông báo cuốn chiếu ở bước 2C. */
 export const DOSE_HORIZON_DAYS = 3;
 
-/** Trạng thái được phép dời giờ / xóa khi lịch thay đổi. */
-const MUTABLE_STATUSES: ReadonlySet<DoseStatus> = new Set<DoseStatus>(['pending']);
+/**
+ * Trạng thái do hệ thống quản lý — được dời giờ / đổi qua lại / xóa khi lịch thay đổi:
+ * chưa xác nhận (pending) và tạm dừng (paused, theo khoảng tạm dừng của thuốc).
+ */
+const MUTABLE_STATUSES: ReadonlySet<DoseStatus> = new Set<DoseStatus>(['pending', 'paused']);
+
+/** Trạng thái mong muốn của một cữ chưa có thao tác. */
+function targetStatus(occurrence: DoseOccurrence): DoseStatus {
+  return occurrence.paused ? 'paused' : 'pending';
+}
 
 export interface ExistingDoseEvent {
   id: string;
@@ -36,6 +44,7 @@ export interface DoseEventUpdate {
   scheduleId: string;
   scheduledAt: string;
   slotKey: string;
+  status: DoseStatus;
 }
 
 export interface DoseSyncPlan {
@@ -73,7 +82,7 @@ function timeId(medicationId: string, scheduleId: string | null, iso: string): s
 
 type Decision =
   | { action: 'keep'; event: ExistingDoseEvent; iso: string }
-  | { action: 'update'; event: ExistingDoseEvent; iso: string; slotKey: string }
+  | { action: 'update'; event: ExistingDoseEvent; iso: string; slotKey: string; status: DoseStatus }
   | { action: 'remove'; event: ExistingDoseEvent };
 
 export function planDoseSync(input: PlanDoseSyncInput): DoseSyncPlan {
@@ -114,8 +123,9 @@ export function planDoseSync(input: PlanDoseSyncInput): DoseSyncPlan {
     if (target && !matchedSlots.has(key)) {
       matchedSlots.add(key);
       const iso = target.scheduledAt.toISOString();
-      if (mutable && iso !== event.scheduledAt) {
-        decisions.push({ action: 'update', event, iso, slotKey: target.slotKey });
+      const status = targetStatus(target);
+      if (mutable && (iso !== event.scheduledAt || status !== event.status)) {
+        decisions.push({ action: 'update', event, iso, slotKey: target.slotKey, status });
       } else {
         decisions.push({ action: 'keep', event, iso: event.scheduledAt });
       }
@@ -134,7 +144,8 @@ export function planDoseSync(input: PlanDoseSyncInput): DoseSyncPlan {
       const key = slotId(target.scheduleId, target.slotKey);
       if (!matchedSlots.has(key)) {
         matchedSlots.add(key);
-        decisions.push({ action: 'update', event, iso: event.scheduledAt, slotKey: target.slotKey });
+        const status = MUTABLE_STATUSES.has(event.status) ? targetStatus(target) : event.status;
+        decisions.push({ action: 'update', event, iso: event.scheduledAt, slotKey: target.slotKey, status });
         continue;
       }
     }
@@ -173,6 +184,7 @@ export function planDoseSync(input: PlanDoseSyncInput): DoseSyncPlan {
         scheduleId: event.scheduleId,
         scheduledAt: decision.iso,
         slotKey: decision.slotKey,
+        status: decision.status,
       });
     }
   }

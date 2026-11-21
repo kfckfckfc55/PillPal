@@ -154,3 +154,27 @@ describe('planDoseSync', () => {
     expect(plan.inserts).toHaveLength(1);
   });
 });
+
+describe('planDoseSync + tạm dừng', () => {
+  const pausedDesired = () => desiredFor('08:00').map((item) => ({ ...item, paused: true }));
+
+  it('cữ mới trong thời gian tạm dừng được tạo ở trạng thái tạm dừng', () => {
+    const plan = planDoseSync(input({ desired: pausedDesired() }));
+    expect(plan.inserts.every((item) => item.paused)).toBe(true);
+  });
+
+  it('bắt đầu tạm dừng: cữ chưa xác nhận → tạm dừng; kết thúc tạm dừng: tạm dừng → chưa xác nhận', () => {
+    const toPaused = planDoseSync(input({ desired: pausedDesired().slice(0, 1), existing: [event({})] }));
+    expect(toPaused.updates).toEqual([expect.objectContaining({ id: 'event-1', status: 'paused' })]);
+
+    const resumed = planDoseSync(
+      input({ desired: desiredFor('08:00').slice(0, 1), existing: [event({ status: 'paused' })] }),
+    );
+    expect(resumed.updates).toEqual([expect.objectContaining({ id: 'event-1', status: 'pending' })]);
+  });
+
+  it('cữ đã uống không bị chuyển sang tạm dừng', () => {
+    const plan = planDoseSync(input({ desired: pausedDesired().slice(0, 1), existing: [event({ status: 'taken' })] }));
+    expect(plan).toEqual({ inserts: [], updates: [], removals: [] });
+  });
+});

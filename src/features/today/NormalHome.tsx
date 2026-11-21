@@ -18,6 +18,7 @@ import {
   type LowStockItem,
 } from './components/SummaryCards';
 import { getDayProgress, groupDosesByPeriod } from './doseDisplay';
+import type { DoseActionController } from './useDoseActions';
 import type { TodayData } from './useTodayData';
 
 const copy = strings.today;
@@ -28,10 +29,18 @@ export interface NormalHomeProps {
   onRefresh: () => void;
   onSelectProfile: (profileId: string) => void;
   onEnableSickDay: () => void;
+  actions: DoseActionController;
 }
 
 /** Màn hình Hôm nay ở chế độ thường. Màn hình rộng (tablet / xoay ngang) → 2 cột. */
-export function NormalHome({ data, refreshing, onRefresh, onSelectProfile, onEnableSickDay }: NormalHomeProps) {
+export function NormalHome({
+  data,
+  refreshing,
+  onRefresh,
+  onSelectProfile,
+  onEnableSickDay,
+  actions,
+}: NormalHomeProps) {
   const router = useRouter();
   const { spacing } = useTheme();
   const { isWide } = useResponsive();
@@ -42,6 +51,10 @@ export function NormalHome({ data, refreshing, onRefresh, onSelectProfile, onEna
   const openMedicationList = () =>
     router.push({ pathname: '/medications', params: { profileId: profile.id } });
   const openRoutine = () => router.push({ pathname: '/routine', params: { profileId: profile.id } });
+  const openHistory = () => router.push({ pathname: '/history', params: { profileId: profile.id } });
+
+  const pauseReasonByMedication = new Map(data.openPauses.map((pause) => [pause.medicationId, pause.reason]));
+  const sideEffectsOf = (doseId: string) => data.sideEffects.filter((log) => log.doseEventId === doseId);
 
   const groups = groupDosesByPeriod(doses);
   const progress = getDayProgress(doses);
@@ -88,14 +101,14 @@ export function NormalHome({ data, refreshing, onRefresh, onSelectProfile, onEna
                     now={now}
                     course={courseByMedication.get(dose.medicationId) ?? null}
                     showDivider={index > 0}
+                    sideEffects={sideEffectsOf(dose.id)}
+                    pauseReason={pauseReasonByMedication.get(dose.medicationId) ?? null}
+                    actions={actions}
                   />
                 ))}
               </Card>
             </View>
           ))}
-          <AppText variant="bodySmall" color="textSecondary">
-            {copy.actionsComingSoon}
-          </AppText>
         </>
       )}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
@@ -106,6 +119,7 @@ export function NormalHome({ data, refreshing, onRefresh, onSelectProfile, onEna
           variant="outline"
           onPress={openMedicationList}
         />
+        <Button title={strings.history.open} icon="calendar-number-outline" variant="outline" onPress={openHistory} />
       </View>
     </View>
   );

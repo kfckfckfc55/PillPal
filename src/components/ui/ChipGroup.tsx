@@ -18,7 +18,8 @@ interface ChipGroupBaseProps<T extends string | number> {
 
 export interface SingleChipGroupProps<T extends string | number> extends ChipGroupBaseProps<T> {
   multiple?: false;
-  value: T;
+  /** null = chưa chọn gì. */
+  value: T | null;
   onChange: (value: T) => void;
 }
 

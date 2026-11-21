@@ -3,12 +3,19 @@ import { useCallback, useState } from 'react';
 
 import { useDatabase } from '@/db/DatabaseProvider';
 import { listAllSchedulesForProfile, listMedications } from '@/db/repositories/medicationRepository';
-import type { Medication, MedicationSchedule } from '@/types/models';
+import { listOpenPausesForProfile } from '@/db/repositories/pauseRepository';
+import type { Medication, MedicationPause, MedicationSchedule } from '@/types/models';
 
 export type MedicationListState =
   | { status: 'loading' }
   | { status: 'error'; message: string }
-  | { status: 'ready'; medications: Medication[]; schedules: MedicationSchedule[] };
+  | {
+      status: 'ready';
+      medications: Medication[];
+      schedules: MedicationSchedule[];
+      /** Tạm dừng đang / sắp diễn ra. */
+      pauses: MedicationPause[];
+    };
 
 /** Thuốc (đang dùng + đã ngừng) của một hồ sơ; tự tải lại khi quay về màn hình. */
 export function useMedicationList(profileId: string | null) {
@@ -18,9 +25,13 @@ export function useMedicationList(profileId: string | null) {
   const load = useCallback(() => {
     if (!profileId) return undefined;
     let cancelled = false;
-    Promise.all([listMedications(db, profileId), listAllSchedulesForProfile(db, profileId)]).then(
-      ([medications, schedules]) => {
-        if (!cancelled) setState({ status: 'ready', medications, schedules });
+    Promise.all([
+      listMedications(db, profileId),
+      listAllSchedulesForProfile(db, profileId),
+      listOpenPausesForProfile(db, profileId, new Date().toISOString()),
+    ]).then(
+      ([medications, schedules, pauses]) => {
+        if (!cancelled) setState({ status: 'ready', medications, schedules, pauses });
       },
       (error: unknown) => {
         if (cancelled) return;

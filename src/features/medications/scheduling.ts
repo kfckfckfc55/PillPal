@@ -177,6 +177,27 @@ export interface DoseOccurrence {
   /** "<ngày sinh hoạt YYYY-MM-DD>#<thứ tự trong ngày>" */
   slotKey: string;
   scheduledAt: Date;
+  /** Rơi vào thời gian tạm dừng thuốc → không nhắc, không tính là quên. */
+  paused: boolean;
+}
+
+/** Khoảng tạm dừng của một thuốc: [startAt, endAt) — endAt null = đến khi người dùng bật lại. */
+export interface PauseWindow {
+  medicationId: string;
+  /** ISO UTC */
+  startAt: string;
+  endAt: string | null;
+}
+
+/** Thời điểm `at` của thuốc có nằm trong một khoảng tạm dừng không. */
+export function isPausedAt(medicationId: string, at: Date, pauses: readonly PauseWindow[]): boolean {
+  const iso = at.toISOString();
+  return pauses.some(
+    (pause) =>
+      pause.medicationId === medicationId &&
+      pause.startAt <= iso &&
+      (pause.endAt === null || iso < pause.endAt),
+  );
 }
 
 /** Date tại `day` 00:00 + số phút (tự sang ngày hôm sau nếu ≥ 24 giờ). */
@@ -207,6 +228,7 @@ export function scheduleOccurrencesForDay(
     scheduleId: schedule.id,
     slotKey: `${dateKey}#${index}`,
     scheduledAt: atMinutesOfDay(day, minutes),
+    paused: false,
   });
 
   switch (schedule.scheduleType) {
@@ -238,6 +260,8 @@ export interface GenerateOccurrencesInput {
   from: Date;
   /** Số ngày cần tính (≥ 1). */
   days: number;
+  /** Các khoảng tạm dừng (cữ rơi vào đó được đánh dấu `paused`). */
+  pauses?: readonly PauseWindow[];
 }
 
 /** Toàn bộ cữ dự kiến của các thuốc đang dùng trong `days` ngày kể từ `from`, sắp theo giờ. */
@@ -256,7 +280,15 @@ export function generateOccurrences(input: GenerateOccurrencesInput): DoseOccurr
     const config = input.configs.get(medication.profileId) ?? DEFAULT_ROUTINE_CONFIG;
     for (const schedule of schedulesByMedication.get(medication.id) ?? []) {
       for (let offset = 0; offset < input.days; offset += 1) {
-        result.push(...scheduleOccurrencesForDay(medication, schedule, addDays(firstDay, offset), config));
+        for (const occurrence of scheduleOccurrencesForDay(
+          medication,
+          schedule,
+          addDays(firstDay, offset),
+          config,
+        )) {
+          occurrence.paused = isPausedAt(medication.id, occurrence.scheduledAt, input.pauses ?? []);
+          result.push(occurrence);
+        }
       }
     }
   }

@@ -113,6 +113,7 @@ function RootNavigator() {
           <Stack.Screen name="medications/new" options={{ title: strings.medications.newScreenTitle }} />
           <Stack.Screen name="medications/[id]" options={{ title: strings.medications.editScreenTitle }} />
           <Stack.Screen name="routine" options={{ title: strings.routine.screenTitle }} />
+          <Stack.Screen name="history" options={{ title: strings.history.screenTitle }} />
           <Stack.Screen name="design-preview" options={{ title: strings.designPreview.screenTitle }} />
           <Stack.Screen name="dev-data" options={{ title: strings.devData.screenTitle }} />
         </Stack.Protected>

@@ -20,6 +20,8 @@ export interface ButtonProps extends Omit<PressableProps, 'children' | 'style'> 
   loading?: boolean;
   /** Kéo giãn hết chiều ngang vùng chứa. */
   fullWidth?: boolean;
+  /** Đệm ngang nhỏ hơn — cho nút phụ đứng cạnh nhau trong một hàng (vẫn cao ≥ 48dp). */
+  compact?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -54,6 +56,7 @@ export function Button({
   icon,
   loading = false,
   fullWidth = false,
+  compact = false,
   disabled,
   style,
   accessibilityLabel,
@@ -75,7 +78,7 @@ export function Button({
         {
           minHeight: touch.primary,
           minWidth: touch.min,
-          paddingHorizontal: spacing.xl,
+          paddingHorizontal: compact ? spacing.md : spacing.xl,
           paddingVertical: spacing.sm,
           borderRadius: radius.pill,
           borderWidth: 1.5,

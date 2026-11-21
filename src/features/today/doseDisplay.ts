@@ -2,6 +2,7 @@ import type { IconName } from '@/components/ui/AppIcon';
 import type { BadgeTone } from '@/components/ui/Badge';
 import { strings } from '@/constants/strings.vi';
 import type { DoseEventWithMedication } from '@/db/repositories/doseEventRepository';
+import { effectiveDueAt } from '@/features/medications/doseActions';
 import { formatTime } from '@/utils/format';
 
 /** Hàm thuần để hiển thị cữ thuốc trên màn hình Hôm nay. */
@@ -68,15 +69,23 @@ export function describeDoseStatus(dose: DoseEventWithMedication, now: Date): Do
     case 'missed':
       return { tone: 'danger', label: copy.missed, icon: 'close-circle' };
     case 'skipped':
-      return { tone: 'neutral', label: copy.skipped, icon: 'remove-circle' };
+      return {
+        tone: 'neutral',
+        label: dose.skipReason ? copy.skippedWithReason(dose.skipReason) : copy.skipped,
+        icon: 'remove-circle',
+      };
     case 'paused':
       return { tone: 'neutral', label: copy.paused, icon: 'pause-circle' };
-    case 'snoozed':
+    case 'snoozed': {
+      if (dose.snoozeUntil && now.getTime() >= new Date(dose.snoozeUntil).getTime()) {
+        return { tone: 'warning', label: copy.snoozedDue, icon: 'notifications' };
+      }
       return {
         tone: 'info',
         label: copy.snoozed(dose.snoozeUntil ? formatTime(dose.snoozeUntil) : ''),
         icon: 'alarm',
       };
+    }
     case 'pending': {
       const minutesLate = (now.getTime() - new Date(dose.scheduledAt).getTime()) / 60_000;
       if (minutesLate >= OVERDUE_AFTER_MINUTES) {
@@ -105,11 +114,14 @@ export function getDayProgress(doses: readonly DoseEventWithMedication[]): DayPr
   return { taken: counted.filter(isDoseTaken).length, total: counted.length };
 }
 
-/** Cữ tiếp theo cần uống: cữ đang chờ / nhắc lại sớm nhất (kể cả cữ đã quá giờ chưa xác nhận). */
+/**
+ * Cữ tiếp theo cần uống: cữ đang chờ / nhắc lại sớm nhất (kể cả cữ đã quá giờ chưa xác nhận).
+ * Cữ đang nhắc lại tính theo giờ nhắc lại.
+ */
 export function getNextDose(doses: readonly DoseEventWithMedication[]): DoseEventWithMedication | null {
   return (
     [...doses]
       .filter((dose) => dose.status === 'pending' || dose.status === 'snoozed')
-      .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt))[0] ?? null
+      .sort((a, b) => effectiveDueAt(a).localeCompare(effectiveDueAt(b)))[0] ?? null
   );
 }
