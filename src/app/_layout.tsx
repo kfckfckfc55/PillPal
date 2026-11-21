@@ -12,6 +12,7 @@ import {
   saveThemePreference,
   type PersistedAppSettings,
 } from '@/db/repositories/settingsRepository';
+import { CaregiverSessionProvider } from '@/features/family/CaregiverSessionProvider';
 import { ConsentProvider, useConsent } from '@/features/onboarding/ConsentProvider';
 import { useAppBootstrap } from '@/hooks/useAppBootstrap';
 import { useReminderLifecycle } from '@/services/notifications/useReminderLifecycle';
@@ -40,7 +41,9 @@ export default function RootLayout() {
     <DatabaseProvider db={bootstrap.db}>
       <ConsentProvider db={bootstrap.db} initialStatus={bootstrap.consent}>
         <PersistedThemeProvider db={bootstrap.db} settings={bootstrap.settings}>
-          <RootNavigator />
+          <CaregiverSessionProvider>
+            <RootNavigator />
+          </CaregiverSessionProvider>
         </PersistedThemeProvider>
       </ConsentProvider>
     </DatabaseProvider>
@@ -121,6 +124,8 @@ function RootNavigator() {
             name="reminders-permission"
             options={{ title: strings.reminders.permission.screenTitle }}
           />
+          <Stack.Screen name="family/index" options={{ title: strings.family.screenTitle }} />
+          <Stack.Screen name="family/login" options={{ title: strings.family.loginScreenTitle }} />
           <Stack.Screen name="design-preview" options={{ title: strings.designPreview.screenTitle }} />
           <Stack.Screen name="dev-data" options={{ title: strings.devData.screenTitle }} />
         </Stack.Protected>

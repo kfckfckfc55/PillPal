@@ -77,12 +77,15 @@ src/
     routine.tsx           # Giờ sinh hoạt theo loại ngày, lịch trong tuần, đổi riêng hôm nay / ngày mai
     history.tsx           # Lịch sử uống thuốc 7 ngày
     reminders-permission.tsx # Giải thích trước khi xin quyền thông báo / hướng dẫn mở Cài đặt
+    family/               # Gia đình (thử nghiệm): index (tài khoản người thân), login (số điện thoại + OTP)
     design-preview.tsx    # Xem bộ giao diện (chỉ dùng khi phát triển)
     dev-data.tsx          # Xem / nạp lại / xóa dữ liệu (chỉ dùng khi phát triển)
   db/
     client.ts             # Mở SQLite, bật WAL + khóa ngoại
     migrations/           # 001_initial.ts (28 bảng), 002 (loại ngày + "ô" của cữ thuốc), 003 (số viên đã trừ), index.ts
   services/
+    backend/              # config (địa chỉ máy chủ, cờ tính năng), familyApi (gọi PocketBase bằng fetch),
+                          # caregiverSession (expo-secure-store), phone, errorMessages + __tests__/
     notifications/        # reminderService (kênh, nút, quyền, lên lịch), reminderPlan (cuốn chiếu, ≤ 64),
                           # reminderContent, reminderResponses (nút trên thông báo), timeZoneCheck,
                           # useReminderLifecycle (gốc app), useReminderPermission + __tests__/
@@ -209,7 +212,7 @@ Sửa `.env` xong phải khởi động lại với `npx expo start -c`.
   - [x] **Bước 2C**: Thông báo cục bộ nhắc thuốc: màn hình giải thích trước khi xin quyền, kênh Android, nút Đã uống / Nhắc lại 10 phút / Bỏ qua (mở app để ghi nhận, kể cả khi app tắt), lên lịch cuốn chiếu ≤ 64 + nhắc mở app, ẩn tên thuốc, gửi thử; hỏi khi đổi múi giờ (theo giờ nơi mới / giữ khoảng cách như giờ cũ); hủy thông báo khi rút lại đồng ý.
 - [ ] **Milestone 2.5**: Tài khoản (số điện thoại + OTP) & Gia đình (ông bà ghép máy bằng QR) với PocketBase.
   - [x] **Bước 2.5A**: Máy chủ PocketBase v0.40.6 trong `server/`: migration tạo 6 collection (tài khoản con cháu / máy ông bà, hồ sơ chia sẻ chỉ có tên gọi, liên kết = bản ghi đồng ý từng quyền, thuốc, cữ), luật truy cập (chỉ máy ông bà ghi, con cháu chỉ đọc theo quyền, thu hồi mất quyền ngay), hook tính quyền xem, cài đặt an toàn (log không IP, giới hạn tần suất, xóa `users`); script kiểm tra 12 tình huống; README chạy trên macOS / Windows; app có nút kiểm tra kết nối máy chủ (chỉ khi phát triển).
-  - [ ] Bước 2.5B: Đăng nhập con cháu bằng số điện thoại + OTP (mã giả khi phát triển, giới hạn gửi mã), lưu phiên bằng `expo-secure-store`.
+  - [x] **Bước 2.5B**: Đăng nhập con cháu bằng số điện thoại + OTP 6 số: route `/api/keben/otp/*` (mã băm + salt, hết hạn 5 phút, gửi lại sau 60 giây, ≤ 5 mã/giờ, ≤ 10 mã/ngày, sai ≤ 5 lần, chỉ số thử nghiệm — chưa gửi SMS thật), ghi phiên bản đồng ý trên máy chủ; app có màn hình Gia đình + Đăng nhập (thông báo xử lý số điện thoại, ô đồng ý không tick sẵn, đếm ngược gửi lại), phiên lưu bằng `expo-secure-store` (chỉ trên máy này), tự gia hạn / tự đăng xuất khi hết hạn, đổi tên gọi, đăng xuất, xóa tài khoản trên máy chủ. Chỉ hiện khi `EXPO_PUBLIC_FAMILY_FEATURE=1`.
   - [ ] Bước 2.5C: Ghép máy ông bà bằng QR / mã 6 số, màn hình đồng ý chữ to chọn từng quyền.
   - [ ] Bước 2.5D: Đồng bộ tối thiểu, màn hình Gia đình, cảnh báo trễ cữ, thu hồi.
 - [ ] Milestone 3 → 6: xem `docs/KEBEN_MASTER_PROMPT.md`.

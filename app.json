@@ -50,6 +50,12 @@
           "color": "#1B3A6B",
           "enableRemoteNotifications": false
         }
+      ],
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": false
+        }
       ]
     ],
     "experiments": {

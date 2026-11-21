@@ -92,6 +92,39 @@ export PB_ENCRYPTION_KEY='32-ky-tu-ngau-nhien-cua-ban-xxxx'
 
 (PowerShell: `$env:PB_ENCRYPTION_KEY='...'` rồi `.\pocketbase.exe serve --http=0.0.0.0:8090 --encryptionEnv=PB_ENCRYPTION_KEY`.)
 
+## 3b. Bật đăng nhập thử nghiệm bằng OTP (bước 2.5B)
+
+Con cháu đăng nhập bằng **số điện thoại + mã 6 số**. Giai đoạn này **chưa gửi SMS thật** (nhà cung cấp SMS chọn ở Milestone 5): chỉ các **số thử nghiệm** khai báo trong biến môi trường mới nhận được mã.
+
+macOS:
+
+```bash
+KEBEN_TEST_PHONES=0900000001,0900000002 KEBEN_TEST_OTP=123456 ./pocketbase serve --http=0.0.0.0:8090
+```
+
+Windows (PowerShell):
+
+```powershell
+$env:KEBEN_TEST_PHONES='0900000001,0900000002'; $env:KEBEN_TEST_OTP='123456'; .\pocketbase.exe serve --http=0.0.0.0:8090
+```
+
+- `KEBEN_TEST_PHONES`: các số được nhận mã (phân cách bằng dấu phẩy). Số khác → app báo "Máy chủ thử nghiệm chỉ nhận số điện thoại thử nghiệm".
+- `KEBEN_TEST_OTP`: mã giả cố định 6 số. Bỏ trống → mã **ngẫu nhiên** được in ra cửa sổ Terminal của máy chủ (`[keben-otp] Mã thử nghiệm cho 0900***001: 123456`).
+- Có thể dùng thêm cờ `--encryptionEnv=PB_ENCRYPTION_KEY` như ở trên.
+
+Bảo vệ chống dò mã / spam SMS (route `pb_hooks/otp.pb.js`):
+
+| Quy tắc | Giá trị |
+|---|---|
+| Mã hết hạn | 5 phút |
+| Gửi lại mã | sau 60 giây |
+| Số mã / số điện thoại | ≤ 5 mỗi giờ, ≤ 10 mỗi ngày |
+| Nhập sai | ≤ 5 lần / mã, sau đó phải xin mã mới |
+| Gọi `/api/keben/*` | ≤ 20 lần / phút / địa chỉ IP |
+| Lưu mã | chỉ lưu **mã đã băm** (sha256 + salt); không ai đọc được bảng mã qua API; tự xóa sau 24 giờ |
+
+Khi xác nhận mã, app gửi kèm **phiên bản văn bản đồng ý** người dùng đã tick; máy chủ ghi `consent_version` + `consented_at` vào tài khoản. Phiên đăng nhập có hạn 30 ngày, app tự gia hạn mỗi lần mở.
+
 ## 4. Cho app trên điện thoại kết nối
 
 1. Tìm IP của máy tính trong mạng Wi-Fi:
@@ -105,6 +138,7 @@ export PB_ENCRYPTION_KEY='32-ky-tu-ngau-nhien-cua-ban-xxxx'
    ```
 
 4. Khởi động lại app với `npx expo start -c` → **Cài đặt → Dữ liệu (dev) → Kiểm tra kết nối máy chủ**.
+5. Thử đăng nhập: thêm `EXPO_PUBLIC_FAMILY_FEATURE=1` vào `.env`, khởi động lại → **Cài đặt → Gia đình (thử nghiệm) → Mở màn hình Gia đình → Đăng nhập bằng số điện thoại** → nhập số thử nghiệm → mã.
 
 > IP của máy tính có thể đổi khi bật lại Wi-Fi → nếu mất kết nối, kiểm tra lại IP và sửa `.env`.
 
@@ -126,11 +160,26 @@ $env:PB_SUPERUSER_EMAIL='ten-ban@example.com'; $env:PB_SUPERUSER_PASSWORD='MAT-K
 
 Script tạo vài tài khoản **giả**, thử 12 tình huống (ai đọc / ghi được gì, thu hồi quyền, xóa tài khoản…) rồi tự xóa dữ liệu thử. Kết quả mong đợi: `TẤT CẢ LUẬT TRUY CẬP ĐỀU ĐÚNG`.
 
+**Kiểm tra đăng nhập OTP** — quy tắc thuần (không cần máy chủ):
+
+```bash
+node tests/otp-rules.test.mjs
+```
+
+và trên máy chủ thật (khởi động máy chủ với `KEBEN_TEST_PHONES=0900000011,0900000012,0900000013,0900000014,0900000015 KEBEN_TEST_OTP=123456`, rồi ở cửa sổ khác):
+
+```bash
+PB_SUPERUSER_EMAIL=ten-ban@example.com PB_SUPERUSER_PASSWORD='MAT-KHAU-MANH-CUA-BAN' PB_URL=http://127.0.0.1:8090 node tests/otp.test.mjs
+```
+
+Kết quả mong đợi: `ĐĂNG NHẬP OTP HOẠT ĐỘNG ĐÚNG` (10 tình huống: số sai / số thật, gửi lại quá sớm, thiếu đồng ý, sai mã, đăng nhập, gia hạn phiên, không tự đổi số, sai 5 lần bị khóa, mã hết hạn, xóa tài khoản).
+
 ## 6. Dữ liệu trên máy chủ (tối thiểu hóa)
 
 | Collection | Nội dung | Ai đọc | Ai ghi |
 |---|---|---|---|
-| `caregivers` | Con cháu: số điện thoại (đăng nhập OTP ở bước 2.5B), tên gọi | Chính người đó | Route OTP phía máy chủ; người đó sửa tên / xóa tài khoản |
+| `caregivers` | Con cháu: số điện thoại, tên gọi, phiên bản văn bản đồng ý + thời điểm đồng ý | Chính người đó | Route OTP phía máy chủ; người đó sửa tên / xóa tài khoản |
+| `otp_requests` | Mã OTP **đã băm** + salt, hạn dùng, số lần nhập sai | **Không ai** (chỉ route phía máy chủ) | Route OTP; tự xóa sau 24 giờ |
 | `devices` | Máy của ông bà (tạo khi ghép QR ở bước 2.5C), không cần số điện thoại | Chính máy đó | Route ghép máy; máy đó xóa tài khoản |
 | `shared_profiles` | **Chỉ tên gọi** của ông bà | Máy ông bà + con cháu đang được chia sẻ | Chỉ máy ông bà |
 | `family_links` | Liên kết = **bản ghi đồng ý của ông bà**: từng quyền (xem thuốc / xem cữ / nhận cảnh báo), phiên bản văn bản, thời điểm đồng ý / thu hồi | Máy ông bà + đúng người con cháu đó | Tạo qua route ghép máy; **chỉ máy ông bà** đổi quyền / thu hồi; con cháu tự ngừng theo dõi được |

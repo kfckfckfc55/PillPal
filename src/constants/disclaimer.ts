@@ -11,6 +11,8 @@ export const MEDICAL_DISCLAIMER =
 export const LEGAL_DOCUMENT_VERSIONS = {
   medical_disclaimer: '2026-11.1',
   data_processing_notice: '2026-11.1',
+  /** Thông báo xử lý số điện thoại khi người thân tạo tài khoản (máy chủ ghi lại phiên bản + thời điểm). */
+  caregiver_account: '2026-11.1',
 } as const;
 
 /** Bản rút gọn để hiển thị ở chân màn hình. */

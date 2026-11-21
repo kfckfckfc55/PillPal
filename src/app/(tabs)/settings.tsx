@@ -15,6 +15,7 @@ import {
 import { MEDICAL_DISCLAIMER } from '@/constants/disclaimer';
 import { strings } from '@/constants/strings.vi';
 import { useConsent } from '@/features/onboarding/ConsentProvider';
+import { FamilySettingsSection } from '@/features/settings/FamilySettingsSection';
 import { ReminderSettingsSection } from '@/features/settings/ReminderSettingsSection';
 import { THEME_OPTIONS } from '@/features/settings/themeOptions';
 import { useTheme } from '@/theme';
@@ -92,6 +93,8 @@ export default function SettingsScreen() {
       </Section>
 
       <ReminderSettingsSection />
+
+      <FamilySettingsSection />
 
       <Section title={copy.privacyTitle}>
         <Card>
