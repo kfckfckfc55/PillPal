@@ -49,3 +49,7 @@ server/pocketbase.exe
 server/*.zip
 server/CHANGELOG.md
 server/LICENSE.md
+
+# Bàn giao riêng tư (cuộc trò chuyện cũ, công cụ thử nghiệm) & bản đồ code của graphify — không commit
+handoff-local/
+graphify-out/
