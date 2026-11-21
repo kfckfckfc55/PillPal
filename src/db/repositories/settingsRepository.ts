@@ -1,9 +1,16 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
+import type { TimeZoneMode, TimeZoneSnapshot, TimeZoneState } from '@/features/medications/timeZone';
 import type { ThemePreference } from '@/theme/tokens';
 import { nowIso } from '@/utils/date';
 
-export type SettingKey = 'theme_preference' | 'sick_day_mode';
+export type SettingKey =
+  | 'theme_preference'
+  | 'sick_day_mode'
+  | 'hide_medication_names'
+  | 'tz_last_seen'
+  | 'tz_mode'
+  | 'tz_reference_offset';
 
 export interface PersistedAppSettings {
   themePreference: ThemePreference;
@@ -55,4 +62,58 @@ export function saveThemePreference(db: SQLiteDatabase, preference: ThemePrefere
 
 export function saveSickDayMode(db: SQLiteDatabase, enabled: boolean): Promise<void> {
   return setSetting(db, 'sick_day_mode', enabled ? '1' : '0');
+}
+
+// ---------------------------------------------------------------------------
+// Milestone 2C: thông báo nhắc thuốc & múi giờ
+// ---------------------------------------------------------------------------
+
+export interface ReminderSettings {
+  /** Ẩn tên thuốc trong nội dung thông báo. */
+  hideMedicationNames: boolean;
+}
+
+export async function readReminderSettings(db: SQLiteDatabase): Promise<ReminderSettings> {
+  return { hideMedicationNames: (await getSetting(db, 'hide_medication_names')) === '1' };
+}
+
+export function saveHideMedicationNames(db: SQLiteDatabase, hide: boolean): Promise<void> {
+  return setSetting(db, 'hide_medication_names', hide ? '1' : '0');
+}
+
+function parseSnapshot(value: string | null): TimeZoneSnapshot | null {
+  if (!value) return null;
+  try {
+    const parsed = JSON.parse(value) as Partial<TimeZoneSnapshot>;
+    if (typeof parsed.offsetMinutes !== 'number') return null;
+    return { name: typeof parsed.name === 'string' ? parsed.name : null, offsetMinutes: parsed.offsetMinutes };
+  } catch {
+    return null;
+  }
+}
+
+export async function readTimeZoneState(db: SQLiteDatabase): Promise<TimeZoneState> {
+  const [lastSeen, mode, reference] = await Promise.all([
+    getSetting(db, 'tz_last_seen'),
+    getSetting(db, 'tz_mode'),
+    getSetting(db, 'tz_reference_offset'),
+  ]);
+  const referenceNumber = reference === null ? Number.NaN : Number(reference);
+  return {
+    lastSeen: parseSnapshot(lastSeen),
+    mode: (mode === 'keep_interval' ? 'keep_interval' : 'local') satisfies TimeZoneMode,
+    referenceOffsetMinutes: Number.isFinite(referenceNumber) ? referenceNumber : null,
+  };
+}
+
+export async function saveTimeZoneState(db: SQLiteDatabase, state: TimeZoneState): Promise<void> {
+  await db.withTransactionAsync(async () => {
+    await setSetting(db, 'tz_last_seen', JSON.stringify(state.lastSeen));
+    await setSetting(db, 'tz_mode', state.mode);
+    await setSetting(
+      db,
+      'tz_reference_offset',
+      state.referenceOffsetMinutes === null ? '' : String(state.referenceOffsetMinutes),
+    );
+  });
 }

@@ -11,10 +11,12 @@ import {
 } from '@/db/repositories/medicationRepository';
 import { listPausesForDoseSync } from '@/db/repositories/pauseRepository';
 import { loadRoutineConfigs, pruneDayOverrides } from '@/db/repositories/routineRepository';
+import { readTimeZoneState } from '@/db/repositories/settingsRepository';
 import { addDays, startOfLocalDay, toLocalDateKey } from '@/utils/date';
 
 import { DOSE_HORIZON_DAYS, isEmptyPlan, planDoseSync, type DoseSyncPlan } from './doseSync';
 import { generateOccurrences } from './scheduling';
+import { offsetEastMinutes, scheduleShiftMinutes } from './timeZone';
 
 export interface DoseSyncResult {
   inserted: number;
@@ -42,10 +44,11 @@ async function runSync(db: SQLiteDatabase, now: Date): Promise<DoseSyncResult> {
   const windowStart = startOfLocalDay(now);
   const firstDayKey = toLocalDateKey(windowStart);
 
-  const [medications, schedules, pauses] = await Promise.all([
+  const [medications, schedules, pauses, timeZone] = await Promise.all([
     listMedicationsForDoseSync(db),
     listSchedulesForDoseSync(db),
     listPausesForDoseSync(db),
+    readTimeZoneState(db),
   ]);
   const profileIds = [...new Set(medications.map((medication) => medication.profileId))];
   const configs = await loadRoutineConfigs(db, profileIds);
@@ -57,6 +60,8 @@ async function runSync(db: SQLiteDatabase, now: Date): Promise<DoseSyncResult> {
     from: windowStart,
     days: DOSE_HORIZON_DAYS,
     pauses,
+    // Đã đổi múi giờ và chọn "giữ như giờ cũ" → dịch mọi giờ uống theo độ lệch múi giờ.
+    shiftMinutes: scheduleShiftMinutes(timeZone, offsetEastMinutes(now)),
   });
   // Lấy từ 1 ngày trước để thấy cả cữ "trước khi ngủ" sau nửa đêm của ô hôm qua (giữ nguyên, không đụng tới).
   const existing = await listDoseEventsForSync(db, addDays(windowStart, -1).toISOString());

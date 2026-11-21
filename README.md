@@ -16,6 +16,7 @@ Kế hoạch tuân thủ pháp luật Việt Nam (dữ liệu cá nhân, y tế,
 | Điều hướng | `expo-router` (route trong `src/app/`) |
 | Giao diện | Theme navy tự xây, Sáng / Tối / Theo hệ thống, icon `@expo/vector-icons` |
 | Dữ liệu trên máy | `expo-sqlite` (offline-first, migration theo `PRAGMA user_version`) |
+| Thông báo | `expo-notifications` — **chỉ thông báo cục bộ** (tạo trên máy, không dùng push); `expo-localization` để nhận biết đổi múi giờ |
 | Máy chủ gia đình | PocketBase tự host — từ Milestone 2.5, khi phát triển chạy trên máy tính cá nhân |
 | Build | EAS Build (`eas.json`) |
 
@@ -75,11 +76,16 @@ src/
     medications/          # Danh sách thuốc · Thêm thuốc (new) · Sửa thuốc ([id])
     routine.tsx           # Giờ sinh hoạt theo loại ngày, lịch trong tuần, đổi riêng hôm nay / ngày mai
     history.tsx           # Lịch sử uống thuốc 7 ngày
+    reminders-permission.tsx # Giải thích trước khi xin quyền thông báo / hướng dẫn mở Cài đặt
     design-preview.tsx    # Xem bộ giao diện (chỉ dùng khi phát triển)
     dev-data.tsx          # Xem / nạp lại / xóa dữ liệu (chỉ dùng khi phát triển)
   db/
     client.ts             # Mở SQLite, bật WAL + khóa ngoại
     migrations/           # 001_initial.ts (28 bảng), 002 (loại ngày + "ô" của cữ thuốc), 003 (số viên đã trừ), index.ts
+  services/
+    notifications/        # reminderService (kênh, nút, quyền, lên lịch), reminderPlan (cuốn chiếu, ≤ 64),
+                          # reminderContent, reminderResponses (nút trên thông báo), timeZoneCheck,
+                          # useReminderLifecycle (gốc app), useReminderPermission + __tests__/
     repositories/         # Đọc/ghi theo từng nhóm dữ liệu (UI không viết SQL trực tiếp)
     seed.ts · reset.ts    # Dữ liệu mẫu & xóa sạch (chỉ dev)
     DatabaseProvider.tsx  # useDatabase()
@@ -112,9 +118,36 @@ assets/images/            # Icon & splash nền navy (bản tạm, hoàn thiện
 - Thay đổi schema: **thêm file migration mới** trong `src/db/migrations/` và khai báo vào `MIGRATIONS`. Không sửa migration đã phát hành.
 - Màn hình **Cài đặt → Dành cho nhà phát triển → Dữ liệu (dev)**: xem số bản ghi từng bảng, nạp lại dữ liệu mẫu, xóa sạch.
 - Dữ liệu mẫu (2 hồ sơ, 4 thuốc, cữ thuốc 3 ngày qua + hôm nay, lịch tái khám sau 3 ngày, huyết áp 7 ngày…) là **giả**, tên thuốc chỉ để minh họa giao diện.
-- **Cữ thuốc (`dose_events`)** được sinh tự động cho hôm nay + 2 ngày tới mỗi khi mở màn hình Hôm nay và sau mỗi lần sửa thuốc / giờ sinh hoạt. Mỗi cữ có một "ô" (`slot_key` = ngày + thứ tự): đổi giờ thì cữ chưa uống được dời, cữ đã uống / bỏ qua giữ nguyên và **không sinh thêm cữ trong cùng ngày** (tránh nhắc uống trùng liều). Thêm thuốc lúc 10:00 thì không hiện cữ 08:00 sáng hôm đó.
+- **Cữ thuốc (`dose_events`)** được sinh tự động cho hôm nay + 6 ngày tới mỗi khi mở màn hình Hôm nay và sau mỗi lần sửa thuốc / giờ sinh hoạt. Mỗi cữ có một "ô" (`slot_key` = ngày + thứ tự): đổi giờ thì cữ chưa uống được dời, cữ đã uống / bỏ qua giữ nguyên và **không sinh thêm cữ trong cùng ngày** (tránh nhắc uống trùng liều). Thêm thuốc lúc 10:00 thì không hiện cữ 08:00 sáng hôm đó.
 - Bản cài mới (không có dữ liệu mẫu): màn hình Hôm nay hỏi **tên gọi** để tạo hồ sơ đầu tiên.
 - **Trạng thái cữ:** `pending` (chưa xác nhận) · `snoozed` (nhắc lại) · `taken` / `taken_late` (uống trễ > 60 phút) · `skipped` (bỏ qua, có lý do) · `paused` (trong thời gian tạm dừng — không nhắc, không tính là quên) · `missed` (qua ngày mới vẫn chưa xác nhận). "Đã uống" trừ một liều khỏi số lượng còn (không âm) và ghi `stock_deducted`; **Hoàn tác** cộng trả đúng số đó và xóa phản ứng đã ghi cho cữ.
+
+## Thông báo nhắc thuốc
+
+- **Chỉ thông báo cục bộ:** tạo và hẹn giờ ngay trên máy, không qua máy chủ (plugin `expo-notifications` đặt `enableRemoteNotifications: false`).
+- **Xin quyền đúng lúc:** sau khi lưu thuốc đầu tiên, app mở màn hình giải thích rồi mới hiện hộp thoại của hệ thống. Bị từ chối → hướng dẫn mở Cài đặt của máy. Màn hình Hôm nay có thẻ nhắc khi đang có thuốc mà chưa bật thông báo.
+- **Kênh Android:** *Nhắc uống thuốc* (ưu tiên cao), *Lịch khám*, *Thông báo khác*; icon nhỏ `assets/images/notification-icon.png`, màu nhấn navy.
+- **Nút trên thông báo:** Đã uống · Nhắc lại sau 10 phút · Bỏ qua. Bấm nút sẽ **mở app** để ghi nhận chắc chắn vào dữ liệu trên máy, kể cả khi app đang tắt (xử lý ngầm không mở app cần `expo-task-manager` và chỉ chạy trên Android → chưa dùng). Cữ trễ ≥ 2 giờ: không tự ghi mà mở bảng chọn giờ kèm lời nhắc hỏi bác sĩ / dược sĩ.
+- **Lên lịch cuốn chiếu:** iOS chỉ giữ 64 thông báo chờ → Kề Bên hẹn tối đa 59 cữ gần nhất + 1 thông báo "hãy mở ứng dụng" sau cữ cuối. Cữ được sinh trước 7 ngày. Mỗi lần mở / quay lại app, sửa thuốc, giờ sinh hoạt, tạm dừng hoặc thao tác trên cữ → tính lại và chỉ hủy / đặt phần khác nhau (định danh thông báo gồm cữ + giờ + nội dung). Bản ghi lưu ở bảng `scheduled_notifications`.
+- **Cài đặt → Thông báo nhắc thuốc:** trạng thái quyền, số thông báo đang hẹn, *Ẩn tên thuốc trong thông báo*, *Gửi thử một thông báo (sau 5 giây)*.
+- **Đổi múi giờ:** khi tên múi giờ của máy đổi và đang có thuốc, app hỏi *Theo giờ nơi mới* (08:00 vẫn là 08:00) hay *Giữ như giờ cũ* (giữ khoảng cách giữa các cữ, mọi giờ uống cộng thêm độ lệch). Đang giữ giờ cũ → màn hình Hôm nay có thẻ để chuyển về giờ nơi mới.
+- **Rút lại sự đồng ý** → hủy toàn bộ thông báo của Kề Bên.
+
+**Chạy thử thông báo**
+
+- iOS Simulator và Android Emulator đều nhận được thông báo cục bộ. Trên iPhone ảo: thông báo hiện ở đầu màn hình; muốn thấy các nút, **kéo thông báo xuống** (hoặc nhấn giữ).
+- Expo Go dùng được cho thông báo cục bộ nhưng Expo cảnh báo là chưa hỗ trợ đầy đủ. Để kiểm tra đúng giờ khi app tắt hẳn trên **máy thật** (điều kiện hoàn thành Milestone 2), nên dùng development build:
+
+  ```bash
+  npx expo install expo-dev-client
+  ```
+
+  ```bash
+  npx eas-cli@latest build --profile development --platform android
+  ```
+
+  (hoặc `npx expo run:ios` trên Mac có Xcode và iPhone cắm cáp.)
+- Một số máy Android tiết kiệm pin có thể đưa thông báo đến trễ vài phút; chưa dùng quyền "báo thức chính xác" (`SCHEDULE_EXACT_ALARM`) vì cần khai báo riêng với Google Play — sẽ cân nhắc ở Milestone 6.
 
 ## Theme navy & chế độ Sáng/Tối
 
@@ -161,9 +194,9 @@ Sao chép `.env.example` thành `.env` rồi điền giá trị. Chỉ biến `E
 - [x] **Milestone 1 · Bước 1A**: Khởi tạo dự án Expo SDK 58 + TypeScript strict + expo-router + ESLint, cấu hình `app.json` / `eas.json`, hệ thống theme navy Sáng/Tối, bộ UI component, khung 5 tab, màn hình Cài đặt có chọn giao diện.
 - [x] **Bước 1B**: SQLite với 28 bảng (sẵn chỗ cho tài khoản & gia đình: `family_links`, `remote_id`, `synced_at`), migration, repository cơ bản, dữ liệu mẫu tiếng Việt, màn hình Dữ liệu (dev), lưu theme & Sick-Day vào máy, giữ splash tới khi tải xong.
 - [x] **Bước 1C**: Màn hình chào bắt buộc đồng ý (không tick sẵn, lưu phiên bản vào `consents`, rút lại được trong Cài đặt); màn hình **Hôm nay** đọc dữ liệu thật (cữ thuốc theo khung giờ, trạng thái, tiến độ, cảnh báo buồn ngủ, sắp hết thuốc, lịch khám đếm ngược, chọn hồ sơ); **chế độ Đang mệt** (ẩn tab, chữ to, gọi người thân / 115, thông tin khẩn cấp); bố cục 2 cột trên màn hình rộng.
-- [ ] **Milestone 2**: Nhắc uống thuốc thông minh.
+- [x] **Milestone 2**: Nhắc uống thuốc thông minh (phần code; chờ kiểm tra trên máy thật theo điều kiện hoàn thành).
   - [x] **Bước 2A**: Thêm / sửa / ngừng / xóa thuốc; giờ uống theo bữa ăn & giấc ngủ, giờ cố định hoặc cách đều; ngày trong tuần, liệu trình, số lượng, lưu ý buồn ngủ / chóng mặt, nhắc trùng dị ứng; **Giờ sinh hoạt** theo ngày làm / ngày nghỉ / làm ca + lịch tuần + đổi riêng hôm nay; tự sinh cữ cho 3 ngày; tạo hồ sơ đầu tiên; unit test (`jest-expo`).
   - [x] **Bước 2B**: Đã uống / Nhắc lại 10–15 phút / Đã uống lúc khác… / Bỏ qua (kèm lý do) / Hoàn tác ngay trên màn hình Hôm nay (và nút lớn ở chế độ Đang mệt); trừ & trả số viên; ghi phản ứng sau uống kèm lưu ý an toàn; cữ trễ ≥ 2 giờ nhắc "hỏi bác sĩ / dược sĩ" (không khuyên uống bù); tạm dừng có lý do + tự dùng lại; cữ ngày cũ chưa xác nhận → "Đã quên"; Lịch sử 7 ngày.
-  - [ ] Bước 2C: Thông báo nhắc thuốc (quyền, kênh Android, nút trên thông báo, lên lịch cuốn chiếu), đổi múi giờ.
+  - [x] **Bước 2C**: Thông báo cục bộ nhắc thuốc: màn hình giải thích trước khi xin quyền, kênh Android, nút Đã uống / Nhắc lại 10 phút / Bỏ qua (mở app để ghi nhận, kể cả khi app tắt), lên lịch cuốn chiếu ≤ 64 + nhắc mở app, ẩn tên thuốc, gửi thử; hỏi khi đổi múi giờ (theo giờ nơi mới / giữ khoảng cách như giờ cũ); hủy thông báo khi rút lại đồng ý.
 - [ ] Milestone 2.5: Tài khoản (số điện thoại + OTP) & Gia đình (ông bà ghép máy bằng QR) với PocketBase.
 - [ ] Milestone 3 → 6: xem `docs/KEBEN_MASTER_PROMPT.md`.

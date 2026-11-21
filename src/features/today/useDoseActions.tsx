@@ -1,4 +1,4 @@
-import { useState, type ReactElement } from 'react';
+import { useCallback, useState, type ReactElement } from 'react';
 import { AccessibilityInfo, Alert, View } from 'react-native';
 
 import {
@@ -29,6 +29,7 @@ import {
   snoozeUntil,
   validateTakenTime,
 } from '@/features/medications/doseActions';
+import { refreshReminders } from '@/services/notifications/reminderService';
 import type { SideEffectTag } from '@/types/models';
 import { useTheme } from '@/theme';
 import { atLocalTime } from '@/utils/date';
@@ -55,6 +56,8 @@ export interface DoseActionController {
   takeNow: (dose: DoseEventWithMedication) => void;
   /** Mở bảng thao tác khác: nhắc lại, uống lúc khác, bỏ qua. */
   openMore: (dose: DoseEventWithMedication) => void;
+  /** Mở thẳng bảng chọn giờ uống (VD bấm "Đã uống" trên thông báo khi cữ đã trễ nhiều). */
+  openLate: (dose: DoseEventWithMedication) => void;
   snooze: (dose: DoseEventWithMedication, minutes: number) => void;
   undo: (dose: DoseEventWithMedication) => void;
   saveSideEffects: (
@@ -77,18 +80,23 @@ export function useDoseActions(onChanged: () => void): DoseActionController {
     if (busyId) return;
     setBusyId(dose.id);
     setSheet(null);
-    action().then(
-      () => {
-        setBusyId(null);
-        AccessibilityInfo.announceForAccessibility(announcement);
-        onChanged();
-      },
-      (error: unknown) => {
-        console.error('[dose] Thao tác thất bại', error);
-        setBusyId(null);
-        Alert.alert(strings.common.errorTitle, copy.actionFailed);
-      },
-    );
+    action()
+      // Hủy / đặt lại thông báo của cữ vừa thao tác (VD nhắc lại → thông báo mới sau 10 phút).
+      .then(() =>
+        refreshReminders(db).catch((error: unknown) => console.warn('[dose] Không cập nhật được thông báo', error)),
+      )
+      .then(
+        () => {
+          setBusyId(null);
+          AccessibilityInfo.announceForAccessibility(announcement);
+          onChanged();
+        },
+        (error: unknown) => {
+          console.error('[dose] Thao tác thất bại', error);
+          setBusyId(null);
+          Alert.alert(strings.common.errorTitle, copy.actionFailed);
+        },
+      );
   }
 
   function recordTaken(dose: DoseEventWithMedication, takenAt: Date) {
@@ -140,6 +148,10 @@ export function useDoseActions(onChanged: () => void): DoseActionController {
   };
 
   const close = () => setSheet(null);
+  const openLate = useCallback(
+    (dose: DoseEventWithMedication) => setSheet({ mode: 'late', dose, time: formatTime(new Date()) }),
+    [],
+  );
   let sheetElement: ReactElement | null = null;
 
   if (sheet) {
@@ -259,6 +271,7 @@ export function useDoseActions(onChanged: () => void): DoseActionController {
     busyId,
     takeNow,
     openMore: (dose) => setSheet({ mode: 'menu', dose }),
+    openLate,
     snooze,
     undo,
     saveSideEffects,

@@ -205,12 +205,16 @@ function atMinutesOfDay(day: Date, minutes: number): Date {
   return new Date(day.getFullYear(), day.getMonth(), day.getDate(), 0, minutes, 0, 0);
 }
 
-/** Các cữ của một lịch uống trong một ngày sinh hoạt. */
+/**
+ * Các cữ của một lịch uống trong một ngày sinh hoạt.
+ * `shiftMinutes`: cộng thêm vào mọi giờ uống (chế độ "giữ khoảng cách như giờ cũ" khi đổi múi giờ).
+ */
 export function scheduleOccurrencesForDay(
   medication: Medication,
   schedule: MedicationSchedule,
   day: Date,
   config: RoutineConfig,
+  shiftMinutes = 0,
 ): DoseOccurrence[] {
   if (schedule.deletedAt !== null || schedule.medicationId !== medication.id) return [];
   if (!isMedicationScheduledOn(medication, day)) return [];
@@ -227,7 +231,7 @@ export function scheduleOccurrencesForDay(
     medicationId: medication.id,
     scheduleId: schedule.id,
     slotKey: `${dateKey}#${index}`,
-    scheduledAt: atMinutesOfDay(day, minutes),
+    scheduledAt: atMinutesOfDay(day, minutes + shiftMinutes),
     paused: false,
   });
 
@@ -262,6 +266,8 @@ export interface GenerateOccurrencesInput {
   days: number;
   /** Các khoảng tạm dừng (cữ rơi vào đó được đánh dấu `paused`). */
   pauses?: readonly PauseWindow[];
+  /** Số phút cộng vào mọi giờ uống (đổi múi giờ, chế độ giữ khoảng cách). Mặc định 0. */
+  shiftMinutes?: number;
 }
 
 /** Toàn bộ cữ dự kiến của các thuốc đang dùng trong `days` ngày kể từ `from`, sắp theo giờ. */
@@ -285,6 +291,7 @@ export function generateOccurrences(input: GenerateOccurrencesInput): DoseOccurr
           schedule,
           addDays(firstDay, offset),
           config,
+          input.shiftMinutes ?? 0,
         )) {
           occurrence.paused = isPausedAt(medication.id, occurrence.scheduledAt, input.pauses ?? []);
           result.push(occurrence);

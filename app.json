@@ -41,7 +41,16 @@
           }
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-localization",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#1B3A6B",
+          "enableRemoteNotifications": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

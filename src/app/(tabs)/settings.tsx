@@ -15,6 +15,7 @@ import {
 import { MEDICAL_DISCLAIMER } from '@/constants/disclaimer';
 import { strings } from '@/constants/strings.vi';
 import { useConsent } from '@/features/onboarding/ConsentProvider';
+import { ReminderSettingsSection } from '@/features/settings/ReminderSettingsSection';
 import { THEME_OPTIONS } from '@/features/settings/themeOptions';
 import { useTheme } from '@/theme';
 import { formatDateTime } from '@/utils/format';
@@ -89,6 +90,8 @@ export default function SettingsScreen() {
           onPress={() => router.push('/routine')}
         />
       </Section>
+
+      <ReminderSettingsSection />
 
       <Section title={copy.privacyTitle}>
         <Card>

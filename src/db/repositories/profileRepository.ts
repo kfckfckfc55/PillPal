@@ -71,3 +71,12 @@ export async function createSelfProfile(db: SQLiteDatabase, displayName: string)
   );
   return id;
 }
+
+/** Số hồ sơ trên máy (không gồm hồ sơ người thân nhận từ máy chủ) — để quyết định ghi tên hồ sơ trong thông báo. */
+export async function countLocalProfiles(db: SQLiteDatabase): Promise<number> {
+  const row = await db.getFirstAsync<{ total: number }>(
+    'SELECT COUNT(*) AS total FROM profiles WHERE deleted_at IS NULL AND is_remote = 0',
+    [],
+  );
+  return row?.total ?? 0;
+}

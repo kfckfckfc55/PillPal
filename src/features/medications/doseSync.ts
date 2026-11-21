@@ -14,8 +14,11 @@ import type { DoseOccurrence } from './scheduling';
  * 5. Không tạo cữ trước thời điểm lịch uống được tạo (thêm thuốc lúc 10:00 thì không hiện cữ 08:00 sáng nay).
  */
 
-/** Số ngày sinh cữ trước (hôm nay + 2 ngày tới) — đủ để lên lịch thông báo cuốn chiếu ở bước 2C. */
-export const DOSE_HORIZON_DAYS = 3;
+/**
+ * Số ngày sinh cữ trước (hôm nay + 6 ngày tới). Thông báo chỉ lên lịch tối đa 59 cữ gần nhất
+ * (giới hạn của iOS) nhưng cần đủ cữ để vẫn nhắc nếu người dùng vài ngày không mở app.
+ */
+export const DOSE_HORIZON_DAYS = 7;
 
 /**
  * Trạng thái do hệ thống quản lý — được dời giờ / đổi qua lại / xóa khi lịch thay đổi:

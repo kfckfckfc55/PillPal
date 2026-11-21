@@ -255,3 +255,62 @@ export async function markPastDosesMissed(db: SQLiteDatabase, beforeIso: string,
   );
   return result.changes;
 }
+
+// ---------------------------------------------------------------------------
+// Milestone 2C: cữ sắp tới cần thông báo
+// ---------------------------------------------------------------------------
+
+export interface UpcomingReminderDose {
+  id: string;
+  profileId: string;
+  profileName: string;
+  status: 'pending' | 'snoozed';
+  scheduledAt: string;
+  snoozeUntil: string | null;
+  medicationName: string;
+  strength: string | null;
+  doseAmount: number;
+  doseUnit: string;
+  mealRelation: MealRelation;
+}
+
+/**
+ * Cữ chưa xác nhận / đang nhắc lại có giờ nhắc sau `fromIso`, của thuốc đang dùng ở hồ sơ trên máy
+ * (cữ tạm dừng, đã uống, bỏ qua… không được nhắc).
+ */
+export async function listUpcomingReminderDoses(
+  db: SQLiteDatabase,
+  fromIso: string,
+): Promise<UpcomingReminderDose[]> {
+  return db.getAllAsync<UpcomingReminderDose>(
+    `SELECT d.id, d.profile_id AS profileId, p.display_name AS profileName, d.status,
+            d.scheduled_at AS scheduledAt, d.snooze_until AS snoozeUntil,
+            m.name AS medicationName, m.strength, COALESCE(s.dose_amount, m.dose_amount) AS doseAmount,
+            m.dose_unit AS doseUnit, m.meal_relation AS mealRelation
+     FROM dose_events d
+     JOIN medications m ON m.id = d.medication_id
+     JOIN profiles p ON p.id = d.profile_id
+     LEFT JOIN medication_schedules s ON s.id = d.schedule_id
+     WHERE d.deleted_at IS NULL AND m.deleted_at IS NULL AND m.is_active = 1
+       AND p.deleted_at IS NULL AND p.is_remote = 0
+       AND ((d.status = 'pending' AND d.scheduled_at > ?) OR (d.status = 'snoozed' AND d.snooze_until > ?))
+     ORDER BY COALESCE(d.snooze_until, d.scheduled_at) ASC`,
+    [fromIso, fromIso],
+  );
+}
+
+/** Một cữ (kèm tên thuốc) theo id — dùng khi xử lý nút bấm trên thông báo. */
+export async function getDoseEventWithMedication(
+  db: SQLiteDatabase,
+  id: string,
+): Promise<DoseEventWithMedication | null> {
+  const row = await db.getFirstAsync<DoseEventRow>(
+    `SELECT ${DOSE_EVENT_COLUMNS}
+     FROM dose_events d
+     JOIN medications m ON m.id = d.medication_id
+     LEFT JOIN medication_schedules s ON s.id = d.schedule_id
+     WHERE d.id = ? AND d.deleted_at IS NULL`,
+    [id],
+  );
+  return row ? mapDoseEvent(row) : null;
+}

@@ -14,6 +14,7 @@ import { strings } from '@/constants/strings.vi';
 import { useDatabase } from '@/db/DatabaseProvider';
 import { getDatabaseStats, type DatabaseStats } from '@/db/repositories/devRepository';
 import { resetDatabase } from '@/db/reset';
+import { refreshReminders } from '@/services/notifications/reminderService';
 import { useTheme } from '@/theme';
 
 const copy = strings.devData;
@@ -58,6 +59,8 @@ export default function DevDataScreen() {
       setBusy(seed ? 'reseed' : 'wipe');
       try {
         await resetDatabase(db, { seed });
+        // Dữ liệu đổi hẳn → lên lịch lại thông báo (xóa sạch = hủy hết thông báo cũ).
+        await refreshReminders(db);
         Alert.alert(copy.doneTitle, seed ? copy.reseedDone : copy.wipeDone);
       } catch (error) {
         Alert.alert(copy.failedTitle, error instanceof Error ? error.message : String(error));

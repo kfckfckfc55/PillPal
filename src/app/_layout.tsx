@@ -6,7 +6,7 @@ import { useCallback, useEffect, type ReactNode } from 'react';
 
 import { ErrorState, Screen } from '@/components/ui';
 import { strings } from '@/constants/strings.vi';
-import { DatabaseProvider } from '@/db/DatabaseProvider';
+import { DatabaseProvider, useDatabase } from '@/db/DatabaseProvider';
 import {
   saveSickDayMode,
   saveThemePreference,
@@ -14,6 +14,7 @@ import {
 } from '@/db/repositories/settingsRepository';
 import { ConsentProvider, useConsent } from '@/features/onboarding/ConsentProvider';
 import { useAppBootstrap } from '@/hooks/useAppBootstrap';
+import { useReminderLifecycle } from '@/services/notifications/useReminderLifecycle';
 import { ThemeProvider, useTheme, type ThemePreference } from '@/theme';
 
 // Giữ splash cho tới khi mở xong cơ sở dữ liệu và đọc cài đặt theme → không nháy sai màu.
@@ -89,6 +90,8 @@ function PersistedThemeProvider({
 function RootNavigator() {
   const { scheme, colors, typography, navigationTheme } = useTheme();
   const { accepted } = useConsent();
+  // Nhắc thuốc: lên lịch thông báo, xử lý nút trên thông báo, đổi múi giờ (chỉ khi đã đồng ý).
+  useReminderLifecycle(useDatabase(), accepted);
 
   return (
     <NavigationThemeProvider value={navigationTheme}>
@@ -114,6 +117,10 @@ function RootNavigator() {
           <Stack.Screen name="medications/[id]" options={{ title: strings.medications.editScreenTitle }} />
           <Stack.Screen name="routine" options={{ title: strings.routine.screenTitle }} />
           <Stack.Screen name="history" options={{ title: strings.history.screenTitle }} />
+          <Stack.Screen
+            name="reminders-permission"
+            options={{ title: strings.reminders.permission.screenTitle }}
+          />
           <Stack.Screen name="design-preview" options={{ title: strings.designPreview.screenTitle }} />
           <Stack.Screen name="dev-data" options={{ title: strings.devData.screenTitle }} />
         </Stack.Protected>

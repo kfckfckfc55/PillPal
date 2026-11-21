@@ -1,10 +1,11 @@
 import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 
-import { AppText, Button, Card, EmptyState, Screen } from '@/components/ui';
+import { AppIcon, AppText, Button, Card, EmptyState, Screen } from '@/components/ui';
 import { MEDICAL_DISCLAIMER_SHORT } from '@/constants/disclaimer';
 import { strings } from '@/constants/strings.vi';
 import { getCourseProgress, getStockStatus } from '@/features/medications/stock';
+import { formatUtcOffset } from '@/features/medications/timeZone';
 import { useResponsive } from '@/hooks/useResponsive';
 import { layout, useTheme } from '@/theme';
 import { formatWeekdayDate } from '@/utils/format';
@@ -30,6 +31,10 @@ export interface NormalHomeProps {
   onSelectProfile: (profileId: string) => void;
   onEnableSickDay: () => void;
   actions: DoseActionController;
+  /** Đang có thuốc nhưng chưa bật / bị tắt quyền thông báo. */
+  remindersOff: boolean;
+  onEnableReminders: () => void;
+  onSwitchToLocalTime: () => void;
 }
 
 /** Màn hình Hôm nay ở chế độ thường. Màn hình rộng (tablet / xoay ngang) → 2 cột. */
@@ -40,6 +45,9 @@ export function NormalHome({
   onSelectProfile,
   onEnableSickDay,
   actions,
+  remindersOff,
+  onEnableReminders,
+  onSwitchToLocalTime,
 }: NormalHomeProps) {
   const router = useRouter();
   const { spacing } = useTheme();
@@ -147,6 +155,37 @@ export function NormalHome({
       </View>
 
       <ProfileSwitcher profiles={data.profiles} selectedId={profile.id} onSelect={onSelectProfile} />
+
+      {remindersOff ? (
+        <Card>
+          <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'center' }}>
+            <AppIcon name="notifications-off-outline" color="warning" />
+            <AppText variant="label" style={{ flex: 1 }}>
+              {strings.reminders.banner.offTitle}
+            </AppText>
+          </View>
+          <AppText color="textSecondary">{strings.reminders.banner.offDescription}</AppText>
+          <Button title={strings.reminders.banner.turnOn} icon="notifications-outline" onPress={onEnableReminders} />
+        </Card>
+      ) : null}
+
+      {data.timeZoneShiftMinutes !== 0 && data.referenceOffsetMinutes !== null ? (
+        <Card>
+          <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'center' }}>
+            <AppIcon name="globe-outline" color="info" />
+            <AppText variant="label" style={{ flex: 1 }}>
+              {strings.reminders.timeZone.bannerTitle(formatUtcOffset(data.referenceOffsetMinutes))}
+            </AppText>
+          </View>
+          <AppText color="textSecondary">{strings.reminders.timeZone.bannerDescription}</AppText>
+          <Button
+            title={strings.reminders.timeZone.switchToLocal}
+            icon="time-outline"
+            variant="outline"
+            onPress={onSwitchToLocalTime}
+          />
+        </Card>
+      ) : null}
 
       <Card variant="highlight">
         <AppText variant="label" color="onPrimaryContainer">

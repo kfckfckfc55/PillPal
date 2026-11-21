@@ -17,10 +17,10 @@ import {
 import { strings } from '@/constants/strings.vi';
 import { useDatabase } from '@/db/DatabaseProvider';
 import { createPause, endPauseNow, listPausesForMedication } from '@/db/repositories/pauseRepository';
+import { refreshReminders } from '@/services/notifications/reminderService';
 import type { Medication, MedicationPause } from '@/types/models';
 import { useTheme } from '@/theme';
 
-import { syncDoseEvents } from '../doseSyncService';
 import {
   PAUSE_REASON_PRESETS,
   createPauseFormValues,
@@ -75,7 +75,7 @@ export function PauseSection({ medication }: { medication: Medication }) {
   function run(action: () => Promise<unknown>, announcement: string) {
     setBusy(true);
     action()
-      .then(() => syncDoseEvents(db))
+      .then(() => refreshReminders(db))
       .then(
         () => {
           setBusy(false);

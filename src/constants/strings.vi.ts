@@ -283,6 +283,85 @@ export const strings = {
     stockLeft: (quantity: string) => `Còn ${quantity}`,
   },
 
+  reminders: {
+    content: {
+      title: 'Đến giờ uống thuốc',
+      snoozeTitle: 'Nhắc lại: đến giờ uống thuốc',
+      hiddenBody: 'Mở Kề Bên để xem thuốc cần uống.',
+      continuityTitle: 'Kề Bên',
+      continuityBody:
+        'Bạn chưa mở Kề Bên mấy hôm nay. Hãy mở ứng dụng để tiếp tục nhận nhắc uống thuốc những ngày tới.',
+      testTitle: 'Kề Bên · Thông báo thử',
+      testBody: 'Thông báo nhắc thuốc đang hoạt động. Bạn sẽ nhận nhắc như thế này khi đến giờ uống.',
+    },
+    actions: {
+      take: 'Đã uống',
+      snooze: 'Nhắc lại sau 10 phút',
+      skip: 'Bỏ qua',
+    },
+    channels: {
+      medicationName: 'Nhắc uống thuốc',
+      medicationDescription: 'Thông báo khi đến giờ uống thuốc và khi nhắc lại.',
+      appointmentName: 'Lịch khám',
+      appointmentDescription: 'Nhắc trước ngày khám và sáng ngày khám.',
+      generalName: 'Thông báo khác',
+      generalDescription: 'Thông báo thử và lời nhắc mở ứng dụng.',
+    },
+    permission: {
+      screenTitle: 'Bật thông báo',
+      title: 'Để Kề Bên nhắc bạn đúng giờ',
+      description:
+        'Kề Bên cần quyền gửi thông báo để nhắc giờ uống thuốc, kể cả khi ứng dụng đang tắt.',
+      points: [
+        'Thông báo được tạo ngay trên máy này, không đi qua máy chủ nào.',
+        'Có nút Đã uống, Nhắc lại sau 10 phút, Bỏ qua ngay trên thông báo.',
+        'Bạn có thể ẩn tên thuốc trong thông báo (Cài đặt → Thông báo nhắc thuốc).',
+        'Có thể tắt bất cứ lúc nào trong Cài đặt của máy.',
+      ],
+      allow: 'Bật thông báo nhắc thuốc',
+      later: 'Để sau',
+      openSettings: 'Mở Cài đặt của máy',
+      deniedTitle: 'Thông báo đang bị tắt',
+      deniedDescription:
+        'Máy đang chặn thông báo của Kề Bên nên sẽ không có nhắc giờ uống thuốc. Hãy mở Cài đặt của máy → Kề Bên → Thông báo → Cho phép.',
+      grantedTitle: 'Đã bật thông báo',
+      grantedDescription: 'Kề Bên sẽ nhắc bạn khi đến giờ uống thuốc.',
+      done: 'Xong',
+      requestFailed: 'Chưa xin được quyền thông báo. Vui lòng thử lại.',
+    },
+    banner: {
+      offTitle: 'Chưa bật thông báo nhắc thuốc',
+      offDescription: 'Không có thông báo thì Kề Bên không nhắc được khi bạn không mở ứng dụng.',
+      turnOn: 'Bật thông báo',
+    },
+    settings: {
+      title: 'Thông báo nhắc thuốc',
+      statusGranted: 'Đang bật — Kề Bên sẽ nhắc khi đến giờ uống.',
+      statusDenied: 'Đang bị tắt trong Cài đặt của máy.',
+      statusUndetermined: 'Chưa bật.',
+      statusUnavailable: 'Thiết bị này không hỗ trợ thông báo.',
+      hideNamesLabel: 'Ẩn tên thuốc trong thông báo',
+      hideNamesDescription: 'Thông báo chỉ ghi "Đến giờ uống thuốc", không ghi tên thuốc.',
+      sendTest: 'Gửi thử một thông báo (sau 5 giây)',
+      testScheduled: 'Hãy khóa màn hình hoặc thoát ra ngoài — thông báo thử sẽ hiện sau 5 giây.',
+      scheduledCount: (count: number) => `Đang hẹn sẵn ${count} thông báo cho các cữ sắp tới.`,
+      exactNote:
+        'Một số máy Android tiết kiệm pin có thể đưa thông báo đến trễ vài phút. Nếu bị trễ nhiều, hãy cho Kề Bên chạy không giới hạn pin.',
+    },
+    timeZone: {
+      title: 'Bạn vừa đổi múi giờ',
+      message: (from: string, to: string, example: string) =>
+        `Đồng hồ của máy đã đổi từ ${from} sang ${to}. Bạn muốn nhắc uống thuốc theo cách nào?\n\n• Theo giờ nơi mới: 08:00 vẫn là 08:00 trên đồng hồ hiện tại.\n• Giữ như giờ cũ: giữ đúng khoảng cách giữa các cữ — 08:00 giờ cũ là ${example} giờ hiện tại.\n\nNếu không chắc, hãy hỏi bác sĩ hoặc dược sĩ.`,
+      followLocal: 'Theo giờ nơi mới',
+      keepInterval: 'Giữ như giờ cũ',
+      bannerTitle: (offset: string) => `Đang nhắc thuốc theo giờ cũ (${offset})`,
+      bannerDescription: 'Giờ trên màn hình đã đổi sang giờ hiện tại của máy để giữ khoảng cách giữa các cữ.',
+      switchToLocal: 'Chuyển sang giờ nơi mới',
+    },
+    handledTaken: (name: string) => `Đã ghi nhận uống ${name}.`,
+    actionFailed: 'Chưa ghi nhận được thao tác từ thông báo. Hãy mở cữ thuốc và thử lại.',
+  },
+
   sideEffects: {
     open: 'Ghi phản ứng',
     openFor: (name: string) => `Ghi phản ứng sau khi uống ${name}`,

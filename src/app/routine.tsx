@@ -20,9 +20,9 @@ import {
 import { strings } from '@/constants/strings.vi';
 import { useDatabase } from '@/db/DatabaseProvider';
 import { loadRoutineConfig, saveRoutine, setDayOverride } from '@/db/repositories/routineRepository';
-import { syncDoseEvents } from '@/features/medications/doseSyncService';
 import { DAY_TYPES, ROUTINE_ANCHORS, type RoutineConfig } from '@/features/medications/scheduling';
 import { useResolvedProfile } from '@/features/profiles/useResolvedProfile';
+import { refreshReminders } from '@/services/notifications/reminderService';
 import {
   invalidDayTypes,
   routineFormFromConfig,
@@ -159,7 +159,7 @@ function RoutineEditor({ profile, config }: { profile: Profile; config: RoutineC
       await saveRoutine(db, profile.id, { anchors: values.times, weekPattern: values.weekPattern });
       await setDayOverride(db, profile.id, todayKey, values.todayOverride);
       await setDayOverride(db, profile.id, tomorrowKey, values.tomorrowOverride);
-      await syncDoseEvents(db);
+      await refreshReminders(db);
     })().then(
       () => {
         setSaving(false);

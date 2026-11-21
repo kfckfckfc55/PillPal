@@ -1,6 +1,6 @@
 import { useFocusEffect } from 'expo-router';
 import type { SQLiteDatabase } from 'expo-sqlite';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { useDatabase } from '@/db/DatabaseProvider';
 import { getNextAppointment } from '@/db/repositories/appointmentRepository';
@@ -17,9 +17,11 @@ import { listActiveMedications, listSchedulesForProfile } from '@/db/repositorie
 import { listOpenPausesForProfile } from '@/db/repositories/pauseRepository';
 import { listProfiles } from '@/db/repositories/profileRepository';
 import { loadRoutineConfig } from '@/db/repositories/routineRepository';
+import { readTimeZoneState } from '@/db/repositories/settingsRepository';
 import { listSideEffectsForDoses } from '@/db/repositories/sideEffectRepository';
 import { syncDoseEvents } from '@/features/medications/doseSyncService';
 import { resolveDayType } from '@/features/medications/scheduling';
+import { offsetEastMinutes, scheduleShiftMinutes } from '@/features/medications/timeZone';
 import type {
   Allergy,
   Appointment,
@@ -51,6 +53,9 @@ export interface TodayData {
   sideEffects: SideEffectLog[];
   /** Tạm dừng đang / sắp diễn ra của các thuốc thuộc hồ sơ. */
   openPauses: MedicationPause[];
+  /** Đang giữ giờ uống theo múi giờ cũ: độ lệch (phút) và múi giờ gốc; 0 / null = theo giờ hiện tại. */
+  timeZoneShiftMinutes: number;
+  referenceOffsetMinutes: number | null;
 }
 
 export type TodayState =
@@ -80,8 +85,18 @@ export async function loadTodayData(
   const dayStart = startOfLocalDay(now);
   const dayEnd = addDays(dayStart, 1);
 
-  const [doses, medications, schedules, nextAppointment, allergies, conditions, contacts, routine, openPauses] =
-    await Promise.all([
+  const [
+    doses,
+    medications,
+    schedules,
+    nextAppointment,
+    allergies,
+    conditions,
+    contacts,
+    routine,
+    openPauses,
+    timeZone,
+  ] = await Promise.all([
       listDoseEventsBetween(db, profile.id, dayStart.toISOString(), dayEnd.toISOString()),
       listActiveMedications(db, profile.id),
       listSchedulesForProfile(db, profile.id),
@@ -91,7 +106,9 @@ export async function loadTodayData(
       listEmergencyContacts(db, profile.id),
       loadRoutineConfig(db, profile.id),
       listOpenPausesForProfile(db, profile.id, now.toISOString()),
+      readTimeZoneState(db),
     ]);
+  const timeZoneShiftMinutes = scheduleShiftMinutes(timeZone, offsetEastMinutes(now));
   const sideEffects = await listSideEffectsForDoses(
     db,
     doses.map((dose) => dose.id),
@@ -111,6 +128,8 @@ export async function loadTodayData(
     contacts,
     sideEffects,
     openPauses,
+    timeZoneShiftMinutes,
+    referenceOffsetMinutes: timeZoneShiftMinutes !== 0 ? timeZone.referenceOffsetMinutes : null,
   };
 }
 
@@ -119,18 +138,23 @@ export function useTodayData(profileId: string | null) {
   const db = useDatabase();
   const [state, setState] = useState<TodayState>({ status: 'loading' });
   const [refreshing, setRefreshing] = useState(false);
+  /** Chỉ nhận kết quả của lần tải mới nhất (tránh dữ liệu hồ sơ cũ đè lên khi đổi hồ sơ nhanh). */
+  const latestRequest = useRef(0);
 
   /** Tải dữ liệu (giờ "bây giờ" lấy tại lúc tải); trả về hàm hủy để bỏ kết quả cũ. */
   const runLoad = useCallback(() => {
     let cancelled = false;
+    latestRequest.current += 1;
+    const requestId = latestRequest.current;
+    const isStale = () => cancelled || requestId !== latestRequest.current;
     loadTodayData(db, profileId, new Date()).then(
       (data) => {
-        if (cancelled) return;
+        if (isStale()) return;
         setState(data ? { status: 'ready', data } : { status: 'empty' });
         setRefreshing(false);
       },
       (error: unknown) => {
-        if (cancelled) return;
+        if (isStale()) return;
         console.error('[today] Không đọc được dữ liệu', error);
         setState({ status: 'error', message: error instanceof Error ? error.message : String(error) });
         setRefreshing(false);

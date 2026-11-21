@@ -11,9 +11,9 @@ import {
   setMedicationActive,
   updateMedication,
 } from '@/db/repositories/medicationRepository';
+import { getReminderPermission, refreshReminders } from '@/services/notifications/reminderService';
 import { useTheme } from '@/theme';
 
-import { syncDoseEvents } from '../doseSyncService';
 import {
   buildScheduleInputs,
   createEmptyFormValues,
@@ -46,15 +46,23 @@ export function MedicationEditor({ data }: { data: MedicationEditorData }) {
   const errors = submitted ? validateMedicationForm(values) : {};
   const update = (patch: Partial<MedicationFormValues>) => setValues((previous) => ({ ...previous, ...patch }));
 
-  /** Chạy thao tác ghi → đồng bộ cữ → quay lại; lỗi thì báo bằng tiếng Việt, ở lại màn hình. */
-  function run(action: () => Promise<unknown>, failedMessage: string) {
+  /**
+   * Chạy thao tác ghi → sinh cữ & lên lịch lại thông báo → quay lại; lỗi thì báo bằng tiếng Việt.
+   * Lần đầu có thuốc mà chưa từng hỏi quyền thông báo → sang màn hình giải thích để xin quyền.
+   */
+  function run(action: () => Promise<unknown>, failedMessage: string, askPermission = false) {
     setBusy(true);
     action()
-      .then(() => syncDoseEvents(db))
+      .then(() => refreshReminders(db))
+      .then(() => (askPermission ? getReminderPermission().catch(() => null) : null))
       .then(
-        () => {
+        (permission) => {
           setBusy(false);
-          router.back();
+          if (permission?.status === 'undetermined') {
+            router.replace('/reminders-permission');
+          } else {
+            router.back();
+          }
         },
         (error: unknown) => {
           console.error('[medications] Lưu thất bại', error);
@@ -76,6 +84,7 @@ export function MedicationEditor({ data }: { data: MedicationEditorData }) {
           ? updateMedication(db, medication.id, input, schedules)
           : createMedication(db, data.profile.id, input, schedules),
       copy.saveFailed,
+      true,
     );
   }
 
